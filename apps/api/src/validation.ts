@@ -1,38 +1,50 @@
 import express from "express";
 
-
-function validateTitle(_req) {
-    if (typeof(_req.body.title) == "string" && _req.body.title != "") {
-        return true;
-    }
-};
-
-function validateDesc(_req) {
-    if (typeof(_req.body.description) == "string" && _req.body.description != "") {
-        return true;
-    }
-};
-
-function validateStatus(_req) {
-    if (typeof(_req.body.status) == "string" && _req.body.status != "") {
-        return true;
-    }
-};
-
-export function validatePost(_req, res, next) {
-    if (validateTitle(_req) && validateDesc(_req) && validateStatus(_req)) {
-        next();
-    }
-    else {
-        res.header(400).json({error: "Invalid request"});
-    }
-};
-
-export function validatePut(_req, res, next) {
-    if (validateTitle(_req) && validateDesc(_req) && validateStatus(_req)) {
-        next();
-    }
-    else {
-        res.header(400).json({error: "Invalid request"});
-    }
+export function checkExist(data: string) {
+    return typeof(data) !== 'undefined';
 }
+
+export function validateUpdate(title: string, desc: string, status: string) {
+    if (!checkExist(title) && !checkExist(desc) && !checkExist(status)) {
+        return false;
+    }
+    else if  ((!checkExist(title) || validateTitle(title)) && (!checkExist(desc) || validateDesc(desc)) && ((!checkExist(status) || validateDesc(status)))) {
+        return true;
+    }
+    return false;
+}
+
+export function validateCreate(title: string, desc: string, status: string) {
+    if (validateTitle(title) && validateDesc(desc) && validateDesc(status)) {
+        return true;
+    }
+    return false;
+}
+
+export function validateId(id: any) {
+    if (Number.isInteger(id)) {
+        return true;
+    }
+    return false;
+}
+
+export function validateTitle(title: string) {
+    if (typeof(title) == "string" && title.length > 0) {
+        return true;
+    }
+    return false;
+};
+
+export function validateDesc(desc: string) {
+    if (typeof(desc) == "string" && desc.length > 0) {
+        return true;
+    }
+    return false;
+};
+
+export function validateStatus(status: string) {
+    if (typeof(status) == "string" && status.length > 0) {
+        return true;
+    }
+    return false;
+};

@@ -1,7 +1,9 @@
 
-# CS453/553 Client-Server Architecture Project
+# Nicholas Garner
 
-This repository contains the **starter template** for the semester project in  
+# CS553 Client-Server Architecture Project
+
+This repository contains the semester project in  
 **CS453 / CS553 – Client/Server Architectures**.
 
 Students will build and extend a distributed web application over the course
@@ -24,18 +26,131 @@ systems are designed and built**, including:
 
 The semester project is a **Task / Project Management System**.
 
-The application allows users to:
+A task contains:
 
-- create projects
-- create tasks within projects
-- assign tasks to users
-- track task status
-- comment on tasks
-- view project activity
+```json
+{
+    "id": 1,
+    "title": "My Task",
+    "description": "My task description",
+    "status": "Todo"
+}
+```
 
-This domain is intentionally simple so that the focus remains on **system
-architecture and communication between components**, rather than complex
-business logic.
+# API Features
+
+The API implements the following routes:
+
+| Route | Description |
+| ----- | ----------- |
+| `GET /health` | Server health check |
+| `GET /db-health` | Database health check |
+| `GET /tasks` | Return all tasks in database |
+| `POST /tasks` | Create new task |
+| `GET /tasks/{id}` | Return one task by id |
+| `PATCH /tasks/{id}` | Update one task by id |
+| `DELETE /tasks/{id}` | Delete one task by id |
+
+---
+
+# Example Routes
+
+### `GET /health`
+
+Returns a health check on the server.
+
+```json
+{
+    "status": "ok",
+    "service": "cs553-api"
+}
+```
+
+### `GET /db-health`
+
+Returns a health check on the database.
+
+```json
+{
+    "status": "ok",
+    "database": "connected",
+    "currentTime": "2026-07-14T02:19:33.487Z"
+}
+```
+
+### `GET /tasks`
+
+Returns all tasks in the database.
+
+```json
+[
+    {
+        "id": 1,
+        "title": "Task 1",
+        "description": "Task 1 description",
+        "status": "Todo"
+    },
+    {
+        "id": 2,
+        "title": "Task 2",
+        "description": "Task 2 description",
+        "status": "Todo"
+    }
+]
+```
+
+### `GET /tasks/{id}`
+
+Returns a task by id if it exists.
+
+```json
+    {
+        "id": 1,
+        "title": "Task 1",
+        "description": "Task 1 description",
+        "status": "Todo"
+    }
+```
+
+Returns an `Error 404` response if the task does not exist.
+
+### `POST /tasks`
+
+Creates a task and returns the created task if successfull.
+
+```json
+    {
+        "id": 1,
+        "title": "Task 1",
+        "description": "Task 1 description",
+        "status": "Todo"
+    }
+```
+
+Returns an `Error 400` response if the request body is invalid.
+
+### `PATCH /tasks/{id}`
+
+Updates a task by id and returns the updated task if successfull.
+
+```json
+    {
+        "id": 1,
+        "title": "Task 1",
+        "description": "Task 1 description",
+        "status": "Todo"
+    }
+```
+
+Returns an `Error 404` response if the task does not exist.
+
+Returns an `Error 400` response if the request body is invalid.
+
+### `DELETE /tasks/{id}`
+
+Deletes a task by id.
+
+Returns an `Error 404` response if the task does not exist.
 
 ---
 
@@ -52,49 +167,6 @@ REST API
 v
 PostgreSQL
 ```
-
-
-Over the semester, the architecture will evolve to include additional
-components such as authentication services, real-time communication,
-and potentially additional APIs.
-
-Example extended architecture:
-
-```shell
-Browser Client
-|
-v
-API Layer
-/
-Auth API Task API
-|
-v
-PostgreSQL
-```
-
----
-
-# Technology Stack
-
-The default project stack is:
-
-Server
-- Node.js
-- TypeScript
-- Express
-
-Database
-- PostgreSQL
-
-Development Tools
-- Docker (for database)
-- npm
-- Git
-
-Students who prefer Python may implement the server using **FastAPI**, but
-all examples and starter code will use **TypeScript**.
-
----
 
 # Repository Structure
 
@@ -130,7 +202,7 @@ cs453-project-template
 ## 1. Clone the repository
 
 ```shell
-git clone <your-repository-url>
+git clone https://github.com/chaseg48/cs553-midterm.git
 cd cs453-project-template
 ```
 
@@ -146,7 +218,15 @@ This will start a PostgreSQL database container.
 
 ---
 
-## 3. Install dependencies
+## 3. Run the schema
+
+```shell
+psql postgresql://postgres:postgres@localhost:5432/cs453 -f database/schema.sql
+```
+
+---
+
+## 4. Install dependencies
 
 ```shell
 cd apps/api
@@ -155,7 +235,7 @@ npm install
 
 ---
 
-## 4. Run the server
+## 5. Run the server
 ```shell
 npm run dev
 ```
@@ -165,69 +245,37 @@ The API server should start locally.
 
 ---
 
-# Project Milestones
+# Automatic Tests
 
-The project will evolve over several milestones during the semester.
+This repository contains an automatic test suite. Execute the following command in a bash terminal to the run tests.
 
-### Milestone 1 – REST API
-
-Students will implement:
-
-- REST endpoints
-- database integration
-- CRUD operations
-- request validation
-
+```bash
+npm run test
+```
 ---
 
-### Milestone 2 – Authentication
+# Reflection Questions
 
-Students will add:
+### 1. What is the difference between an in-memory API and a database-backed API?
 
-- user accounts
-- password hashing
-- login endpoints
-- JWT authentication
-- protected routes
+An in-memory API is volatile and only persists as long as the server is running. A database-backed API is persistent.
 
----
+### 2. Why is it useful to separate routes, services, and database logic?
 
-### Milestone 3 – Architectural Extensions
+It is useful for making the code more modular. It is also useful in that individual components of the code can be modified
+without having to update everything, so long as the interfaces remain the same.
 
-Students will extend the system with at least one of the following:
+### 3. What HTTP status codes did you use, and why?
 
-- WebSockets for real-time updates
-- GraphQL API
-- multi-service architecture
-- asynchronous messaging
-- advanced API documentation
+Codes 200-299 represent successfull/normal results. I used 200 for `GET` and `PATCH`, 201 for `POST`, and 204 for `DELETE`.
+Codes 400-499 represent client error. I used 400 for invalid requests and 404 for missing resources. Codes 500-599 represent
+server errors. I used 500 for internal server errors.
 
-Graduate students will complete an additional architecture extension and
-design analysis.
+### 4. What happens when a client requests a task ID that does not exist?
 
----
+A 404 error response is returned to the client.
 
-# Learning Goals
+### 5. What was the hardest part of connecting the API to PostgreSQL?
 
-By completing this project students should understand:
-
-- how client/server systems communicate
-- how APIs are designed and implemented
-- how databases integrate with web services
-- how authentication works in distributed systems
-- how modern web architectures evolve over time
-
----
-
-# Academic Integrity
-
-All work submitted for this project must be your own.
-
-Students may use documentation and external references, but copying code
-from other students or online repositories is considered academic misconduct.
-
----
-
-# License
-
-This repository is provided for educational use in CS453/553.
+The code to connect the postgreSQL database to the server was given. The difficult part of interfacing the API with
+PostgreSQL for me was forming correct SQL commands.

@@ -11,7 +11,7 @@
 		"format": "biome format --write .",
 		"lint": "biome lint .",
 		"check": "biome check .",
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"test": "vitest run"
 	},
 	"repository": {
 		"type": "git",
@@ -19,6 +19,8 @@
 	},
 	"private": true,
 	"devDependencies": {
-		"@biomejs/biome": "2.4.13"
+		"@biomejs/biome": "2.4.13",
+		"supertest": "^7.0.0",
+    	"vitest": "^4.1.7"
 	}
 }

@@ -1,7 +1,7 @@
 import { pool } from "./pool";
 
 export async function getTasks(_req) {
-    let result = {status: 0, rows: Array()};
+    let result = {status: 0, rows: Array(), rowCount: 0};
     const query = await pool.query(
         `SELECT id,
                 title,
@@ -12,10 +12,15 @@ export async function getTasks(_req) {
             FROM tasks
             ORDER BY id `,
     );
-    console.log(query.rows);
     if (query.rows[0]) {
         result.status = 200;
         result.rows = query.rows;
+        if (query.rowCount == null) {
+            result.rowCount = 0;
+        }
+        else {
+            result.rowCount = Number(query.rowCount);
+        }
     }
     else {
         result.status = 400;
@@ -31,7 +36,7 @@ export async function getTask(_req) {
     const query = await pool.query(text, value);
     if (query.rows[0]) {
         result.status = 200;
-        result.rows = query.rows;
+        result.rows = query.rows[0];
     }
     else {
         result.status = 404;
@@ -42,13 +47,14 @@ export async function getTask(_req) {
 
 export async function createTask(_req) {
     let result = { status: 0, rows: Array()};
-    const text = `INSERT INTO tasks (id, title, description, status) VALUES ($1, $2, $3, $4) RETURNING id, title, description, status`;
-    const values = [_req.params.id, _req.body.title, _req.body.description, _req.body.status];
+    const text = `INSERT INTO tasks (title, description, status)
+                  VALUES ($1, $2, $3)
+                  RETURNING id, title, description, status`;
+    const values = [_req.body.title, _req.body.description, _req.body.status];
     const query = await pool.query(text, values);
-    console.log(query.rows)
     if (query.rows[0]) {
         result.status = 201;
-        result.rows = query.rows;
+        result.rows = query.rows[0];
     }
     else {
         result.status = 400;
@@ -59,14 +65,15 @@ export async function createTask(_req) {
 
 export async function updateTask(_req) {
     let result = { status: 0, rows: Array()};
-    let taskToUpdate = await getTask(_req);
-    if (taskToUpdate.rows[0]) {
-        const text = `UPDATE tasks SET title = $2, description = $3, status = $4 WHERE id = $1 RETURNING id, title, description, status`;
-        const values = [_req.params.id, _req.body.title, _req.body.description, _req.body.status];
-        const query = await pool.query(text, values);
+    const text = `UPDATE tasks
+                  SET title = COALESCE($2, title), description = COALESCE($3, description), status = COALESCE($4, status)
+                  WHERE id = $1
+                  RETURNING id, title, description, status`;
+    const values = [_req.params.id, _req.body.title, _req.body.description, _req.body.status];
+    const query = await pool.query(text, values);
+    if (query.rows[0]) {
         result.status = 200;
         result.rows = query.rows;
-        console.log(result.rows);
     } 
     else {
         result.status = 404;
@@ -77,11 +84,10 @@ export async function updateTask(_req) {
 
 export async function deleteTask(_req) {
     let result = { status: 0, rows: Array()};
-    const taskToDelete = await getTask(_req);
-    if (taskToDelete.rows[0]) {
-        const text = `DELETE FROM tasks WHERE id = $1`;
-        const values = [_req.params.id];
-        const query = await pool.query(text, values);
+    const text = `DELETE FROM tasks WHERE id = $1 RETURNING id, title, description, status`;
+    const values = [_req.params.id];
+    const query = await pool.query(text, values);
+    if (query.rows[0]) {
         result.status = 204;
         result.rows = query.rows;
     }
