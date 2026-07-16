@@ -1,0 +1,359 @@
+openapi: 3.0.3
+
+info:
+  title: CS553 Semester Project
+  version: 1.0.0
+  description: >
+    HTTP API to manage a list of tasks related to a course.
+
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+
+paths:
+  /health:
+    get:
+      summary: Server health check
+      description: Returns a simple status response showing that the server is running.
+      responses:
+        "200":
+          description: Server is running
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+              example:
+                status: ok
+                service: cs553-api
+  /db-health:
+    get:
+      summary: Database health check
+      description: Returns a status response showing that the database is connected.
+      responses:
+        "200":
+          description: Database is running
+          content:
+            application/json:
+            schema:
+              $ref: "#/components/schemas/DatabaseResponse"
+            example:
+              status: ok
+              database: connected
+              currentTime: 2026-07-14T02:19:33.487Z
+        "500":
+          description: Database error response
+          content:
+            application/json:
+            schema:
+              $ref: "#/components/schemas/DatabaseResponse"
+            example:
+              status: error
+              database: disconnected
+  /tasks:
+    get:
+      summary: Get tasks
+      description: Return list of tasks.
+      responses:
+        "200":
+          description: Get tasks response.
+          content:
+            application/json:
+            schema:
+              $ref: "#/components/schemas/TaskListResponse"
+            example:
+              tasks:
+                - id: 1
+                  title: Task 1
+                  description: Task 1 description
+                  status: Todo
+                - id: 2
+                  title: Task 2
+                  description: Task 2 description
+                  status: Todo
+        "500":
+          description: Server error
+          content:
+            application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
+            example:
+              error: Server error
+    post:
+      summary: Add task
+      description: Add a new task to the database.
+      responses:
+        "200":
+          description: Add task response.
+          content:
+            application/json:
+            schema:
+              $ref: "#/components/schemas/Task"
+            example:
+              task:
+                  id: 1
+                  title: Task 1
+                  description: Task 1 description
+                  status: Todo
+        "400":
+          description: Invalid JSON or bad request
+          content:
+            application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
+            example:
+              error: Invalid request
+              message: Enter a valid string for title, description, and status.
+        "500":
+          description: Server error
+          content:
+            application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
+            example:
+              error: Server error
+  /tasks/{id}:
+    get:
+      summary: Get Task
+      description: Get specific task using id.
+      parameters:
+        name: id
+        in: paths
+        required: true
+        description: The task ID from the URL path
+        schema:
+          type: integer
+          example: 1
+      responses:
+        "200":
+          description: Get task response
+          content:
+            application/json:
+            schema:
+              $ref: "#/components/schemas/Task"
+            example:
+                task:
+                  id: 1
+                  title: Task 1
+                  description: Task 1 description
+                  status: Todo
+        "400":
+          description: Invalid JSON or bad request
+          content:
+            application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
+            example:
+              error: Invalid request
+              message: Enter a valid integer id.
+        "404":
+          description: Not found
+          content:
+            application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
+            example:
+              error: Not found
+              message: Task not found, enter a valid id.
+        "500":
+          description: Server error
+          content:
+            application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
+            example:
+              error: Server error
+    patch:
+      summary: Update task
+      description: Update specific task using id.
+      parameters:
+        name: id
+        in: paths
+        required: true
+        description: The task ID from the URL path
+        schema:
+          type: integer
+          example: 1
+      responses:
+        "200":
+          description: Update task response
+          content:
+            application/json:
+            schema:
+              $ref: "#/components/schemas/Task"
+            example:
+                task:
+                  id: 1
+                  title: Task 1
+                  description: Task 1 description
+                  status: Todo
+        "400":
+          description: Invalid JSON or bad request
+          content:
+            application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
+            example:
+              error: Invalid request
+              message: Enter a valid string for title, description, or status.
+        "404":
+          description: Not found
+          content:
+            application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
+            example:
+              error: Not found
+              message: Task not found, enter a valid id.
+        "500":
+          description: Server error
+          content:
+            application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
+            example:
+              error: Server error
+    delete:
+      summary: Delete task
+      description: Delete specific task using id.
+      parameters:
+        name: id
+        in: paths
+        required: true
+        description: The task ID from the URL path
+        schema:
+          type: integer
+          example: 1
+      responses:
+        "204":
+          description: Delete task response
+        "400":
+          description: Invalid JSON or bad request
+          content:
+            application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
+            example:
+              error: Invalid request
+              message: Task not found, enter a valid id.
+        "404":
+          description: Not found
+          content:
+            application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
+            example:
+              error: Not found
+              message: Task not found, enter a valid id.
+        "500":
+          description: Server error
+          content:
+            application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
+            example:
+              error: Server error
+
+Components:
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ok
+        service:
+          type: string
+          example: cs553-api
+      required:
+        - status
+        - service
+  
+      DatabaseResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ok
+        database:
+          type: string
+          example: connected
+        currentTime:
+          type: string
+          example: 2026-07-14T02:19:33.487Z
+      required:
+        - status
+        - database
+  
+      TasksListResponse:
+      type: object
+      properties:
+        tasks:
+          type: array
+          tasks:
+            $ref: "#/components/schemas/Task"
+      required:
+        - tasks
+
+      Task:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: Task 1
+        description:
+          type: string
+          example: Task 1 description
+        status:
+          type: string
+          example: Todo
+      required:
+        - id
+        - title
+        - description
+        - status
+
+      ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Not found
+        message:
+          type: string
+          example: Item not found
+      required:
+        - error
+
+    PostTaskInput:
+      type: object
+      properties:
+        title:
+          type: string
+          example: Task 1
+        description:
+          type: string
+          example: Task 1 description
+        status:
+          type: string
+          example: Todo
+      required:
+        - title
+        - description
+        - status
+
+    PatchTaskInput:
+      type: object
+      properties:
+        title:
+          type: string
+          example: Task 1
+        description:
+          type: string
+          example: Task 1 description
+        status:
+          type: string
+          example: Todo
+      required:

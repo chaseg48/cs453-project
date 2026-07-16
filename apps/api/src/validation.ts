@@ -22,7 +22,7 @@ export function validateCreate(title: string, desc: string, status: string) {
 }
 
 export function validateId(id: any) {
-    if (Number.isInteger(id)) {
+    if (Number.isInteger(Number(id))) {
         return true;
     }
     return false;

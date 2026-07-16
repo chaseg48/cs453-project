@@ -21,8 +21,8 @@ router.get("/", async (_req, res) => {
 		if (result.status == 200) {
 			return res.status(200).json({ tasks: result.rows });
 		}
-		else if (result.status == 400) {
-			return res.status(404).json("No tasks found");
+		else if (result.status == 404) {
+			return res.status(404).json({error: "Not found", message: "No tasks found." });
 		}
 	} catch (error) {
 		console.error("Failed to fetch tasks:", error);
@@ -51,7 +51,7 @@ router.get("/:id", async (_req, res) => {
 
 router.post("/", async (_req, res, next) => {
 	if (!validateCreate(_req.body.title, _req.body.description, _req.body.status)) {
-		res.status(400).json({ error: "Invalid request", message: "Enter a valid string for title, description, and status." });
+		return res.status(400).json({ error: "Invalid request", message: "Enter a valid string for title, description, and status." });
 	}
 	
 	try {
@@ -70,7 +70,7 @@ router.post("/", async (_req, res, next) => {
 
 router.patch("/:id", async (_req, res, next) => {
 	if (!validateUpdate(_req.body.title, _req.body.description, _req.body.status)) {
-		res.status(400).json({ error: "Invalid request", message: "Enter a valid string for title, description, or status." });
+		return res.status(400).json({ error: "Invalid request", message: "Enter a valid string for title, description, or status." });
 	}
 
 	if (!validateId(_req.params.id)) {
