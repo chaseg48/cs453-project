@@ -1,6 +1,8 @@
+import { Request } from "express-serve-static-core";
+import { ParsedQs } from "qs";
 import { pool } from "./pool";
 
-export async function getTasks(_req) {
+export async function getTasks(_req: Request<{}, any, any, ParsedQs, Record<string, any>>) {
     let result = {status: 0, rows: Array(), rowCount: 0};
     const query = await pool.query(
         `SELECT id,
@@ -29,7 +31,7 @@ export async function getTasks(_req) {
     return result;
 }
 
-export async function getTask(_req) {
+export async function getTask(_req: Request<{ id: string; }, any, any, ParsedQs, Record<string, any>>) {
     let result = { status: 0, rows: Array()};
     const text = `SELECT * FROM tasks WHERE id = $1`;
     const value = [_req.params.id];
@@ -45,7 +47,7 @@ export async function getTask(_req) {
     return result;
 }
 
-export async function createTask(_req) {
+export async function createTask(_req: Request<{}, any, any, ParsedQs, Record<string, any>>) {
     let result = { status: 0, rows: Array()};
     const text = `INSERT INTO tasks (title, description, status)
                   VALUES ($1, $2, $3)
@@ -63,7 +65,7 @@ export async function createTask(_req) {
     return result;
 }
 
-export async function updateTask(_req) {
+export async function updateTask(_req: Request<{ id: string; }, any, any, ParsedQs, Record<string, any>>) {
     let result = { status: 0, rows: Array()};
     const text = `UPDATE tasks
                   SET title = COALESCE($2, title), description = COALESCE($3, description), status = COALESCE($4, status)
@@ -82,7 +84,7 @@ export async function updateTask(_req) {
     return result;
 }
 
-export async function deleteTask(_req) {
+export async function deleteTask(_req: Request<{ id: string; }, any, any, ParsedQs, Record<string, any>>) {
     let result = { status: 0, rows: Array()};
     const text = `DELETE FROM tasks WHERE id = $1 RETURNING id, title, description, status`;
     const values = [_req.params.id];
