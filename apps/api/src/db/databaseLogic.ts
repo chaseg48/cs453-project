@@ -12,7 +12,7 @@ export async function getTasks(_req) {
             FROM tasks
             ORDER BY id `,
     );
-    if (query.rows[0]) {
+    if (query.rows[0] || query.rowCount == 0) {
         result.status = 200;
         result.rows = query.rows;
         if (query.rowCount == null) {

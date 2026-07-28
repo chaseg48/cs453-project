@@ -20,6 +20,18 @@ describe("Project Test Suite", () => {
     expect(response.body).toEqual({ status: "ok", service: "cs553-api" });
   });
 
+    // Return database status
+    test("GET /db-health returns status ok", async () => {
+    const app = createApp();
+
+    const response = await request(app)
+        .get("/db-health")
+        .expect(200);
+
+    expect(response.body.status).toEqual("ok");
+    expect(response.body.database).toEqual("connected");
+  });
+
   // Bad path returns error response
   test("GET /bad returns error response", async () => {
     const app = createApp();
@@ -29,6 +41,18 @@ describe("Project Test Suite", () => {
         .expect(404);
 
     expect(response.body).toEqual({ error: "Not found", message: "Path not found." });
+  });
+
+  // Successfull get empty tasks
+  test("GET /tasks returns empty array", async () => {
+    const app = createApp();
+
+    const response = await request(app)
+        .get("/tasks")
+        .expect(200);
+
+    expect(Array.isArray(response.body.tasks)).toBe(true);
+    expect(response.body.tasks.length).toEqual(0);
   });
 
   // Successfully create a task
@@ -80,7 +104,6 @@ describe("Project Test Suite", () => {
   // Successfull get task
   test("GET /tasks/{id} gets a specific task", async () => {
     const app = createApp();
-    console.log(testTaskId);
     const response = await request(app)
         .get("/tasks/" + String(testTaskId))
         .expect(200);

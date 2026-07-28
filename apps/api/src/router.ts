@@ -21,9 +21,6 @@ router.get("/", async (_req, res) => {
 		if (result.status == 200) {
 			return res.status(200).json({ tasks: result.rows });
 		}
-		else if (result.status == 404) {
-			return res.status(404).json({error: "Not found", message: "No tasks found." });
-		}
 	} catch (error) {
 		console.error("Failed to fetch tasks:", error);
 		return res.status(500).json({ error: "Server error" });

@@ -19,7 +19,7 @@ export function createApp() {
 	app.get("/db-health", async (_req, res) => {
 		try {
 			const result = await pool.query("SELECT NOW() AS current_time");
-			res.json({
+			res.status(200).json({
 				status: "ok",
 				database: "connected",
 				currentTime: result.rows[0].current_time,
