@@ -1,8 +1,10 @@
 import express from "express";
 import { env } from "./config/env";
 import { pool } from "./db/pool";
-import { router } from "./router"
-import { getTasks } from "./db/databaseLogic"
+import { taskRouter } from "./routes/taskRoutes"
+import { authRouter } from "./routes/authRoutes"
+import { userRouter } from "./routes/userRoutes";
+import { projectRouter } from "./routes/projectRoutes";
 
 export function createApp() {
 	const app = express();
@@ -33,7 +35,10 @@ export function createApp() {
 		}
 	});
 
-	app.use("/tasks", router);
+	app.use("/auth", authRouter);
+	app.use("/users", userRouter);
+	app.use("/projects", projectRouter);
+	app.use("/tasks", taskRouter);
 
 	app.use((_req, res) => {
 		res.status(404).json({ error: "Not found", message: "Path not found." });

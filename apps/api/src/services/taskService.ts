@@ -1,19 +1,15 @@
 import { Request } from "express-serve-static-core";
 import { ParsedQs } from "qs";
-import { pool } from "./pool";
+import { pool } from "../db/pool";
 
-export async function getTasks(_req: Request<{}, any, any, ParsedQs, Record<string, any>>) {
+export async function getTasks(_req: Request) {
     let result = {status: 0, rows: Array(), rowCount: 0};
-    const query = await pool.query(
-        `SELECT id,
-                title,
-                description,
-                status,
-                created_at AS "createdAt",
-                updated_at AS "updatedAt"
-            FROM tasks
-            ORDER BY id `,
-    );
+    let text = `SELECT *
+         FROM tasks
+         WHERE assigned_to = $1
+         ORDER BY id `;
+    let value = [_req.session.userId];
+    const query = await pool.query(text, value);
     if (query.rows[0] || query.rowCount == 0) {
         result.status = 200;
         result.rows = query.rows;
@@ -31,7 +27,7 @@ export async function getTasks(_req: Request<{}, any, any, ParsedQs, Record<stri
     return result;
 }
 
-export async function getTask(_req: Request<{ id: string; }, any, any, ParsedQs, Record<string, any>>) {
+export async function getTask(_req: Request) {
     let result = { status: 0, rows: Array()};
     const text = `SELECT * FROM tasks WHERE id = $1`;
     const value = [_req.params.id];
@@ -47,12 +43,12 @@ export async function getTask(_req: Request<{ id: string; }, any, any, ParsedQs,
     return result;
 }
 
-export async function createTask(_req: Request<{}, any, any, ParsedQs, Record<string, any>>) {
+export async function createTask(_req: Request) {
     let result = { status: 0, rows: Array()};
-    const text = `INSERT INTO tasks (title, description, status)
-                  VALUES ($1, $2, $3)
+    const text = `INSERT INTO tasks (title, description, status, project_id, assigned_to)
+                  VALUES ($1, $2, $3, $4, $5)
                   RETURNING id, title, description, status`;
-    const values = [_req.body.title, _req.body.description, _req.body.status];
+    const values = [_req.body.title, _req.body.description, _req.body.status, _req.body.project, _req.session.userId];
     const query = await pool.query(text, values);
     if (query.rows[0]) {
         result.status = 201;
@@ -65,7 +61,7 @@ export async function createTask(_req: Request<{}, any, any, ParsedQs, Record<st
     return result;
 }
 
-export async function updateTask(_req: Request<{ id: string; }, any, any, ParsedQs, Record<string, any>>) {
+export async function updateTask(_req: Request) {
     let result = { status: 0, rows: Array()};
     const text = `UPDATE tasks
                   SET title = COALESCE($2, title), description = COALESCE($3, description), status = COALESCE($4, status)
@@ -84,7 +80,7 @@ export async function updateTask(_req: Request<{ id: string; }, any, any, Parsed
     return result;
 }
 
-export async function deleteTask(_req: Request<{ id: string; }, any, any, ParsedQs, Record<string, any>>) {
+export async function deleteTask(_req: Request) {
     let result = { status: 0, rows: Array()};
     const text = `DELETE FROM tasks WHERE id = $1 RETURNING id, title, description, status`;
     const values = [_req.params.id];

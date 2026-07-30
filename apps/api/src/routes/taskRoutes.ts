@@ -1,21 +1,20 @@
-import express, { response } from "express";
-import { env } from "./config/env";
-import { pool } from "./db/pool";
-import { validateTitle,
-	     validateDesc,
-		 validateStatus, 
-		 validateUpdate,
-		 validateCreate, 
-		 validateId } from "./validation"
+import { Router } from "express";
+import { Request, Response, NextFunction } from "express-serve-static-core";
+import { env } from "../config/env";
+import { pool } from "../db/pool";
+import { validateUpdateTask,
+		 validateCreateTask, 
+		 validateId } from "../validation/validation"
 import { getTasks,
 	     getTask,
 	     createTask,
 		 updateTask,
-		 deleteTask} from "./db/databaseLogic"
+		 deleteTask} from "../services/taskService"
+import { authenticate } from "../middleware/authenticate";
 
-export const router = express.Router()
+export const taskRouter = Router();
 
-router.get("/", async (_req, res) => {
+taskRouter.get("/", authenticate, async (_req: Request, res: Response, next: NextFunction) => {
 	try {
 		const result = await getTasks(_req);
 		if (result.status == 200) {
@@ -27,7 +26,7 @@ router.get("/", async (_req, res) => {
 	}
 });
 
-router.get("/:id", async (_req, res) => {
+taskRouter.get("/:id", async (_req: Request, res: Response, next: NextFunction) => {
 	if (!validateId(_req.params.id)) {
 		return res.status(400).json({ error: "Invalid request", message: "Enter a valid integer id." });
 	}
@@ -46,8 +45,8 @@ router.get("/:id", async (_req, res) => {
 	}
 });
 
-router.post("/", async (_req, res, next) => {
-	if (!validateCreate(_req.body.title, _req.body.description, _req.body.status)) {
+taskRouter.post("/", authenticate, async (_req: Request, res: Response, next: NextFunction) => {
+	if (!validateCreateTask(_req.body.title, _req.body.description, _req.body.status)) {
 		return res.status(400).json({ error: "Invalid request", message: "Enter a valid string for title, description, and status." });
 	}
 	
@@ -56,17 +55,17 @@ router.post("/", async (_req, res, next) => {
 		if (result.status == 201) {
 			return res.status(201).json({ task: result.rows });
 		}
-		else if (result.status == 400) {
+		else {
 			return res.status(400).json("Task not created");
 		}
 	}
 	catch(error) {
-		return res.status(500).json({ error: "Servor error 1" });
+		return res.status(500).json({ error: "Servor error" });
 	}
 });
 
-router.patch("/:id", async (_req, res, next) => {
-	if (!validateUpdate(_req.body.title, _req.body.description, _req.body.status)) {
+taskRouter.patch("/:id", authenticate, async (_req: Request, res: Response, next: NextFunction) => {
+	if (!validateUpdateTask(_req.body.title, _req.body.description, _req.body.status)) {
 		return res.status(400).json({ error: "Invalid request", message: "Enter a valid string for title, description, or status." });
 	}
 
@@ -88,7 +87,7 @@ router.patch("/:id", async (_req, res, next) => {
 	}
 });
 
-router.delete("/:id", async (_req, res, next) => {
+taskRouter.delete("/:id", authenticate, async (_req: Request, res: Response, next: NextFunction) => {
 	if (!validateId(_req.params.id)) {
 		return res.status(400).json({ error: "Invalid request", message: "Enter a valid integer id." });
 	}

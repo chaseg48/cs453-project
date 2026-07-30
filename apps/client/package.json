@@ -2,29 +2,23 @@
 	"name": "cs453-api",
 	"version": "1.0.0",
 	"description": "Starter API for CS453/553 Client-Server Architectures",
-	"main": "dist/server.js",
+	"main": "dist/client.js",
 	"scripts": {
-		"test": "jest",
-		"dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+		"client": "ts-node-dev --respawn --transpile-only client.ts",
 		"build": "tsc",
-		"start": "node dist/server.js"
+		"start": "node dist/client.js"
 	},
-	"author": "dschrimpsher",
+	"author": "garnernc",
 	"license": "UNLICENSED",
 	"devDependencies": {
-		"@types/bcryptjs": "^2.4.6",
 		"@types/express": "^5.0.6",
-		"@types/jsonwebtoken": "^9.0.10",
-		"@types/node": "^25.5.0",
 		"@types/pg": "^8.18.0",
 		"ts-node-dev": "^2.0.0",
 		"typescript": "^5.9.3"
 	},
 	"dependencies": {
-		"bcryptjs": "^2.4.3",
 		"dotenv": "^17.3.1",
 		"express": "^5.2.1",
-		"jsonwebtoken": "^9.0.2",
 		"pg": "^8.20.0"
 	}
 }
