@@ -7,7 +7,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 const jwtExpiresIn = "1h"
 
-export async function registerUser(name: string, email: string, password: string) {
+export async function registerUser(name: string, email: string, password: string, role: string = "user") {
     let result = {status: 0, rows: Array()};
     
     let text = `SELECT * FROM "users" WHERE email = $1`;
@@ -19,12 +19,19 @@ export async function registerUser(name: string, email: string, password: string
         return result;
     }
     
-    text = `INSERT INTO users (name, email, password_hash)
-                VALUES ($1, $2, $3)
-                RETURNING email`;
-    
+    var values;
     const hash = await bcrypt.hash(password, 10);
-    let values = [name, email, hash];
+    if (role == "user") {
+        text = `INSERT INTO users (name, email, password_hash)
+                    VALUES ($1, $2, $3)
+                    RETURNING email`;
+        values = [name, email, hash];
+    } else if (role == "admin") {
+        text = `INSERT INTO users (name, email, password_hash, role)
+                    VALUES ($1, $2, $3, $4)
+                    RETURNING email`;
+        values = [name, email, hash, role];
+    }
     query = await pool.query(text, values);
     
     if (query.rows[0]) {
@@ -38,7 +45,7 @@ export async function registerUser(name: string, email: string, password: string
 }
 
 export async function login(name: string, email: string, password: string) {
-    let result = {status: 0, token: String()};
+    let result = {status: 0, rows: Array(), token: String()};
     
     let text = `SELECT * FROM "users" WHERE email = $1`;
     let value = [email];
@@ -56,6 +63,7 @@ export async function login(name: string, email: string, password: string) {
                     { expiresIn: jwtExpiresIn }
                     );
         result.status = 200;
+        result.rows = query.rows;
         result.token = token;
         return result;
     } else {

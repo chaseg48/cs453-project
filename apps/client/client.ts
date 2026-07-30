@@ -1,6 +1,7 @@
 import express from "express";
 
 var accessToken: string;
+var adminToken: string;
 var data;
 var project_id: Number;
 
@@ -120,9 +121,82 @@ async function main() {
     data = await response.json();
     console.log(data);
 
-    console.log("\n\n----------------------------Deleting project----------------------\n")
+    // console.log("\n\n----------------------------Deleting project----------------------\n")
+    // response = await fetch('http://localhost:3000/projects/' + String(project_id), {
+    //     method: 'DELETE',
+    //     headers: {
+    //         'Content-Type': 'application/json',
+    //         'authorization': String('Bearer ' + accessToken)
+    //     },
+    // });
+
+    // data = await response.json();
+    // console.log(data.message);
+
+    // console.log("\n\n----------------------------Check for projects----------------------\n")
+    // response = await fetch('http://localhost:3000/projects', {
+    //     method: 'GET',
+    //     headers: {
+    //         'Content-Type': 'application/json',
+    //         'authorization': String('Bearer ' + accessToken)
+    //     },
+    // });
+    
+    // data = await response.json() as ProjectsResponse;
+    // console.log(data);
+
+    // console.log("\n\n----------------------------Check for tasks----------------------\n")
+    // response = await fetch('http://localhost:3000/tasks', {
+    //     method: 'GET',
+    //     headers: {
+    //         'Content-Type': 'application/json',
+    //         'authorization': String('Bearer ' + accessToken)
+    //     },
+    // });
+    
+    // data = await response.json();
+    // console.log(data);
+
+    console.log("\n\n----------------------------Register admin account----------------------\n")
+    response = await fetch('http://localhost:3000/auth/register', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({name: "Admin", email: "admin@uah.edu", password: "myadminpassword", role: "admin"}),
+    });
+
+    console.log("\n----------------------------Logging In As Admin----------------------\n")
+    response = await fetch('http://localhost:3000/auth/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({name: "Admin", email: "admin@uah.edu", password: "myadminpassword"}),
+    });
+    if (response.status == 200) {
+        data = await response.json() as LoginResponse;
+        adminToken = data.accessToken;
+    } else {
+        console.log("Error: Could not log in");
+        return;
+    }
+
+    console.log("\n\n----------------------------Deleting Another User's Project As Admin----------------------\n")
     response = await fetch('http://localhost:3000/projects/' + String(project_id), {
         method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization': String('Bearer ' + adminToken)
+        },
+    });
+
+    data = await response.json();
+    console.log(data.message);
+
+    console.log("\n\n----------------------------User1: Get all users----------------------\n")
+    response = await fetch('http://localhost:3000/users', {
+        method: 'GET',
         headers: {
             'Content-Type': 'application/json',
             'authorization': String('Bearer ' + accessToken)
@@ -132,27 +206,15 @@ async function main() {
     data = await response.json();
     console.log(data.message);
 
-    console.log("\n\n----------------------------Check for projects----------------------\n")
-    response = await fetch('http://localhost:3000/projects', {
+    console.log("\n\n----------------------------Admin: Get all users----------------------\n")
+    response = await fetch('http://localhost:3000/users', {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
-            'authorization': String('Bearer ' + accessToken)
+            'authorization': String('Bearer ' + adminToken)
         },
     });
-    
-    data = await response.json() as ProjectsResponse;
-    console.log(data);
 
-    console.log("\n\n----------------------------Check for tasks----------------------\n")
-    response = await fetch('http://localhost:3000/tasks', {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'authorization': String('Bearer ' + accessToken)
-        },
-    });
-    
     data = await response.json();
     console.log(data);
 

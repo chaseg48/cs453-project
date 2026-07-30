@@ -35,8 +35,8 @@ export function validateString(data: any) {
     return false;
 }
 
-export function validateCredentials(name: string, email: string, password: string) {
-    if (validateString(name) && validateString(email) && validateString(password)) {
+export function validateCredentials(name: string, email: string, password: string, role: string = "user") {
+    if (validateString(name) && validateString(email) && validateString(password) && validateString(role)) {
         return true;
     }
     return false;

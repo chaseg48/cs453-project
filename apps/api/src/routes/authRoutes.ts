@@ -1,4 +1,4 @@
-import express, { response } from "express";
+import express, { Request, Response } from "express";
 import { validateCredentials } from "../validation/validation";
 import { registerUser,
          login } from "../services/authService";
@@ -7,13 +7,13 @@ const jwtExpiresIn = "1h";
 
 export const authRouter = express.Router();
 
-authRouter.post("/register", async (_req, res) => {
-    if (!validateCredentials(_req.body.name, _req.body.email, _req.body.password)) {
+authRouter.post("/register", async (req: Request, res: Response) => {
+    if (!validateCredentials(req.body.name, req.body.email, req.body.password, req.body.role)) {
         return res.status(400).json({error: "Invalid request", message: "Enter a valid name, email and password"});
     }
 
     try {
-        const result = await registerUser(_req.body.name, _req.body.email, _req.body.password);
+        const result = await registerUser(req.body.name, req.body.email, req.body.password, req.body.role);
 
         if (result.status == 201) {
             return res.status(201).json({message: String("User " + result.rows[0].name + " created")} )
@@ -27,17 +27,16 @@ authRouter.post("/register", async (_req, res) => {
     }
 });
 
-authRouter.post("/login", async (_req, res) => {
-    if (!validateCredentials(_req.body.name, _req.body.email, _req.body.password)) {
+authRouter.post("/login", async (req: Request, res: Response) => {
+    if (!validateCredentials(req.body.name, req.body.email, req.body.password)) {
         return res.status(400).json({error: "Invalid request", message: "Enter a valid name, email and password"});
     }
 
     try {
-        const result = await login(_req.body.name, _req.body.email, _req.body.password);
+        const result = await login(req.body.name, req.body.email, req.body.password);
         if (result.status == 401) {
             return res.status(401).json({error: "Not authorized", message: "Invalid password"});
-        }
-        if (result.status == 404) {
+        } else if (result.status == 404) {
             return res.status(404).json({error: "User not found", message: "A user with the provided email address does not exist"});
         }
     
@@ -45,7 +44,7 @@ authRouter.post("/login", async (_req, res) => {
         accessToken: result.token,
         tokenType: "Bearer",
         expiresIn: jwtExpiresIn,
-        user: { name: _req.body.name, role: "user" }
+        user: { name: req.body.name, role: result.rows[0].role }
         });
         
 
