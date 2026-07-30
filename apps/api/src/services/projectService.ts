@@ -14,10 +14,15 @@ export async function getProjects() {
 export async function getProject(req: Request) {
     let result = { status: 0, rows: Array()};
     const text = 'SELECT * FROM projects WHERE id = $1';
-    const query = await pool.query(text);
+    let values = [Number(req.params.id)];
+    const query = await pool.query(text, values);
     if (query.rows[0]) {
-        result.status = 200;
-        result.rows = query.rows;
+        if (req.session.role == "admin" || query.rows[0].owner_id == req.session.userId) {
+            result.status = 200;
+            result.rows = query.rows;
+        } else {
+            result.status = 403;
+        }
     } else {
         result.status = 404;
     }
@@ -46,9 +51,6 @@ export async function deleteProject(req: Request) {
     let text = 'SELECT * FROM projects WHERE id = $1';
     let values = [Number(req.params.id)];
     const query = await pool.query(text, values);
-    console.log("Here");
-    console.log(req.session.userId);
-    console.log(query.rows[0].owner_id);
     if (query.rows[0]) {
         if (req.session.role == "admin" || req.session.userId == query.rows[0].owner_id) {
             let text = 'DELETE FROM projects WHERE id = $1 RETURNING *';

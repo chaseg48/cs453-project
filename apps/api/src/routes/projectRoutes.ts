@@ -26,8 +26,10 @@ projectRouter.get("/:id", authenticate, async (req: Request, res: Response, next
         const result = await getProject(req);
         if (result.status == 200) {
             return res.status(200).json({ project: result.rows[0] });
+        } else if (result.status == 403) {
+            return res.status(403).json({ error: "Not authorized", message: "You are unauthorized to perform this action." });
         } else if (result.status == 404) {
-            return res.status(404).json({ error: "Project not found", message: "A project with this id does not exist."});
+            return res.status(404).json({ error: "Project not found", message: "A project with this id does not exist." });
         }
     } catch (error) {
         return res.status(500).json({ error: "Server error", message: "Internal servor error." });
@@ -36,7 +38,7 @@ projectRouter.get("/:id", authenticate, async (req: Request, res: Response, next
 
 projectRouter.post("/", authenticate, async (req: Request, res: Response, next: NextFunction) => {
     if (!validateCreateProject(req.body.name, req.body.description)) {
-        return res.status(400).json({ error: "Invalid request", message: "Enter a valid project name and description."});
+        return res.status(400).json({ error: "Invalid request", message: "Enter a valid project name and description." });
     }
     
     try {
@@ -44,7 +46,7 @@ projectRouter.post("/", authenticate, async (req: Request, res: Response, next: 
         if (result.status == 201) {
             return res.status(201).json({ project: result.rows[0] });
         } else {
-            return res.status(400).json({error: "Project not created"});
+            return res.status(400).json({ error: "Project not created" });
         }
     } catch (error) {
         return res.status(500).json({ error: "Server error", message: "Internal servor error." });
@@ -61,7 +63,7 @@ projectRouter.delete("/:id", authenticate, async (req: Request, res: Response, n
         if (result.status == 200) {
             return res.status(200).json({ message: "Project deleted" });
         } else if (result.status == 404) {
-            return res.status(404).json({ error: "Project not found", message: "A project with this id does not exist."});
+            return res.status(404).json({ error: "Project not found", message: "A project with this id does not exist." });
         } else if (result.status == 403) {
             return res.status(403).json({ error: "Not authorized", message: "You are unauthorized to perform this action." });
         }

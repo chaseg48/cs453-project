@@ -35,11 +35,9 @@ authRouter.post("/login", async (_req, res) => {
     try {
         const result = await login(_req.body.name, _req.body.email, _req.body.password);
         if (result.status == 401) {
-            console.log("Password");
             return res.status(401).json({error: "Not authorized", message: "Invalid password"});
         }
         if (result.status == 404) {
-            console.log("User");
             return res.status(404).json({error: "User not found", message: "A user with the provided email address does not exist"});
         }
     

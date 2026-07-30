@@ -1,21 +1,21 @@
 import express from "express";
 
-export function checkExist(data: string) {
+export function checkExist(data: any) {
     return typeof(data) !== 'undefined';
 }
 
-export function validateUpdateTask(title: string, desc: string, status: string) {
-    if (!checkExist(title) && !checkExist(desc) && !checkExist(status)) {
+export function validateUpdateTask(title: string, desc: string, status: string, project: number) {
+    if (!checkExist(title) && !checkExist(desc) && !checkExist(status) && !checkExist(project)) {
         return false;
     }
-    else if  ((!checkExist(title) || validateString(title)) && (!checkExist(desc) || validateString(desc)) && ((!checkExist(status) || validateString(status)))) {
+    else if  ((!checkExist(title) || validateString(title)) && (!checkExist(desc) || validateString(desc)) && ((!checkExist(status) || validateString(status))) && ((!checkExist(project) || validateId(project)))) {
         return true;
     }
     return false;
 }
 
-export function validateCreateTask(title: string, desc: string, status: string) {
-    if (validateString(title) && validateString(desc) && validateString(status)) {
+export function validateCreateTask(title: string, desc: string, status: string, project: number) {
+    if (validateString(title) && validateString(desc) && validateString(status) && validateId(project)) {
         return true;
     }
     return false;
