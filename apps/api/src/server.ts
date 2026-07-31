@@ -7,6 +7,10 @@ import { userRouter } from "./routes/userRoutes";
 import { projectRouter } from "./routes/projectRoutes";
 
 export function createApp() {
+	if (env.jwtSecret == "development_change_me") {
+		throw new Error("The jwt secret has not been set through your environment. Update the JWT_SECRET environment variable!");
+	}
+	
 	const app = express();
 
 	app.use(express.json());

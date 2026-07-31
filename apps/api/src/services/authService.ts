@@ -15,7 +15,7 @@ export async function registerUser(name: string, email: string, password: string
     let query = await pool.query(text, value);
 
     if (query.rows[0]) {
-        result.status = 400;
+        result.status = 401;
         return result;
     }
     
@@ -24,12 +24,12 @@ export async function registerUser(name: string, email: string, password: string
     if (role == "user") {
         text = `INSERT INTO users (name, email, password_hash)
                     VALUES ($1, $2, $3)
-                    RETURNING email`;
+                    RETURNING name, email`;
         values = [name, email, hash];
     } else if (role == "admin") {
         text = `INSERT INTO users (name, email, password_hash, role)
                     VALUES ($1, $2, $3, $4)
-                    RETURNING email`;
+                    RETURNING name, email`;
         values = [name, email, hash, role];
     }
     query = await pool.query(text, values);

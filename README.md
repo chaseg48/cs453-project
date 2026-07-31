@@ -4,54 +4,114 @@
 # CS553 Client-Server Architecture Project
 
 This repository contains the semester project in  
-**CS453 / CS553 – Client/Server Architectures**.
-
-Students will build and extend a distributed web application over the course
-of the semester. The system will evolve through several architectural stages,
-mirroring the historical evolution of modern web systems.
-
-The goal of the project is to help students understand **how real client/server
-systems are designed and built**, including:
-
-- REST API design
-- database integration
-- authentication and authorization
-- multi-service architectures
-- real-time communication
-- modern API technologies
-
----
+**CS553 – Client/Server Architectures**.
 
 # Project Overview
+## Database Overview
+The semester project is a **Task / Project Management System**. Users can create tasks and projects and relate them to
+one another. User accounts, tasks, and projects are stored in a `Postgres` database, and as such, information persists
+between instances of the server. More information about how to set up the database is provided later in this document.
 
-The semester project is a **Task / Project Management System**.
+### A `user` contains:
 
-A task contains:
+```json
+{
+    "name": "Username",
+    "email": "user@email.com",
+    "password_hash": "examplehash",
+    "role": "user",
+    "created_at": "2026-07-31 20:06:36.627073+00"
+}
+```
+
+Users can take on roles such as `user` or `admin`. Admin users have a wider set of actions available to them than
+standard users. More information on this is provided later in this document.
+
+### A `project` contains:
 
 ```json
 {
     "id": 1,
-    "title": "My Task",
-    "description": "My task description",
-    "status": "Todo"
+    "name": "Example Project",
+    "description": "Example project description",
+    "owner_id": 1,
+    "created_at": "2026-07-31 20:06:36.627073+00",
+    "updated_at": "2026-07-31 20:06:36.627073+00"
 }
 ```
+
+The project owner id will autopopulate with the user id of the user making the request. The API does not currently
+support modifying the owner id of projects.
+
+### A `task` contains:
+
+```json
+{
+    "id": 1,
+    "title": "Example task",
+    "description": "Example task description",
+    "status": "Todo",
+    "project_id": 1,
+    "assigned_to": 1,
+    "created_at": "2026-07-31 20:06:36.627073+00",
+    "updated_at": "2026-07-31 20:06:36.627073+00"
+}
+```
+
+The owner assigned to id will autopopulate with the user id of the user making the request. Task creation requires
+a valid project id.
+
+## Authentication and Authorization Overview
+
+Users must create user accounts to interact with most aspects of the API. API routes for users, tasks, and
+projects all require that the user be signed in. Bcrypt is used for password hashing and comparison. Raw password are
+not stored in the database. Instead, the password hashed are stored. A successfull login results in the generation of a
+Json Web Token. After logging in, successive API calls are expected to contain the generated token, which is decoded
+with the `JWT_SECRET`. To run the server, `JWT_SECRET` must be defined within the environment that the server is running
+in, else the server throws an error. More information on defining this environment variable is provided below.
 
 # API Features
 
 The API implements the following routes:
 
-| Route | Description |
-| ----- | ----------- |
-| `GET /health` | Server health check |
-| `GET /db-health` | Database health check |
-| `GET /tasks` | Return all tasks in database |
-| `POST /tasks` | Create new task |
-| `GET /tasks/{id}` | Return one task by id |
-| `PATCH /tasks/{id}` | Update one task by id |
-| `DELETE /tasks/{id}` | Delete one task by id |
+| Route | Description | Minimum Required Role |
+| ----- | ----------- | ------------- |
+| `GET /health` | Server health check | None |
+| `GET /db-health` | Database health check | None |
+| `POST /auth/register` | Create a new user | None |
+| `POST /auth/login` | Log in as user | None |
+| `GET /users` | Return list of all users | Admin |
+| `GET /users/:id` | Return one user | Admin |
+| `GET /projects` | Return list of projects | User |
+| `GET /projects/:id` | Return one project | User |
+| `POST /projects` | Create a new project | User |
+| `DELETE /projects/:id` | Delete a project | User |
+| `GET /tasks` | Return list of tasks | User |
+| `GET /tasks/:id` | Return one task | User |
+| `POST /tasks` | Create new task | User |
+| `PATCH /tasks/:id` | Update one task | User |
+| `DELETE /tasks/:id` | Delete one task | User |
 
----
+It is important to note that deleting a project will also cause all related tasks to be deleted.
+
+# Authorization Rules
+
+The API implements authorization rules for carrying out requests based on the user that is making the request. Some
+routes are restricted based on the data present in the request or the route itself. Authorization rules are implemented
+as follows:
+
+| Route | Rule |
+| ----- | ----------- |
+| `GET /users` | User must be admin
+| `GET /users/:id` | User must be admin
+| `GET /projects` | Only projects owned by the user are returned. All projects returned for admins.
+| `GET /projects/:id` | Return one project if it is owned by the user. Admins may return any project.
+| `DELETE /projects/:id` | Delete a project if owned by user. Admins may delete any project.
+| `GET /tasks` | Only tasks owned by the user are returned. All tasks are returned for admins.
+| `GET /tasks/:id` | Return one task if assigned to user. Admins may return any task.
+| `POST /tasks` | Users may only create tasks in projects that they own. Admins can create tasks in any project.
+| `PATCH /tasks/:id` | Update one task if assigned to user. Admins may update any tasks.
+| `DELETE /tasks/:id` | Delete one task if assigned to user. Admins may delete any task.
 
 # Example Routes
 
@@ -78,40 +138,83 @@ Returns a health check on the database.
 }
 ```
 
-### `GET /tasks`
+### `POST /auth/register`
 
-Returns all tasks in the database.
+Registers a new user.
 
 ```json
-[
-    {
-        "id": 1,
-        "title": "Task 1",
-        "description": "Task 1 description",
-        "status": "Todo"
-    },
-    {
-        "id": 2,
-        "title": "Task 2",
-        "description": "Task 2 description",
-        "status": "Todo"
-    }
-]
+{
+    "message": "User User 1 created"
+}
 ```
+
+### `POST /auth/login`
+
+Registers a new user.
+
+```json
+{
+    "message": "Logged in as: User 1"
+}
+```
+
+### `GET /tasks`
+
+Returns tasks assigned to the user.
+
+```json
+{
+    "tasks":
+    [
+        {
+            "id": 1,
+            "title": "Task 1",
+            "description": "Task 1 description",
+            "status": "Todo",
+            "project_id": 1,
+            "assigned_to": 1,
+            "created_at": "2026-07-31 20:06:36.627073+00",
+            "updated_at": "2026-07-31 20:06:36.627073+00"
+        },
+        {
+            "id": 2,
+            "title": "Task 2",
+            "description": "Task 2 description",
+            "status": "Todo",
+            "project_id": 1,
+            "assigned_to": 1,
+            "created_at": "2026-07-31 20:06:36.627073+00",
+            "updated_at": "2026-07-31 20:06:36.627073+00"
+        }
+    ]
+}
+```
+An empty array will be returned if there are no tasks assigned to the user or the database is empty.
+
+Returns an `Error 401` if the user is not signed in.
 
 ### `GET /tasks/{id}`
 
-Returns a task by id if it exists.
+Returns a task by id if it exists and is assigned to the user making the request.
 
 ```json
     {
-        "id": 1,
-        "title": "Task 1",
-        "description": "Task 1 description",
-        "status": "Todo"
+    "task":
+        {
+            "id": 1,
+            "title": "Task 1",
+            "description": "Task 1 description",
+            "status": "Todo",
+            "project_id": 1,
+            "assigned_to": 1,
+            "created_at": "2026-07-31 20:06:36.627073+00",
+            "updated_at": "2026-07-31 20:06:36.627073+00"
+        }
     }
 ```
 
+Returns an `Error 401` if the user is not signed in.
+Returns an `Error 403` if the task is assigned to another user.
 Returns an `Error 404` response if the task does not exist.
 
 ### `POST /tasks`
@@ -120,57 +223,96 @@ Creates a task and returns the created task if successfull.
 
 ```json
     {
-        "id": 1,
-        "title": "Task 1",
-        "description": "Task 1 description",
-        "status": "Todo"
+    "task": {
+            "id": 1,
+            "title": "Task 1",
+            "description": "Task 1 description",
+            "status": "Todo",
+            "project_id": 1,
+            "assigned_to": 1,
+            "created_at": "2026-07-31 20:06:36.627073+00",
+            "updated_at": "2026-07-31 20:06:36.627073+00"
     }
+  }
 ```
 
-Returns an `Error 400` response if the request body is invalid.
+### `GET /projects`
 
-### `PATCH /tasks/{id}`
+Returns projects owned by the user.
 
-Updates a task by id and returns the updated task if successfull.
+```json
+{
+    "projects":
+    [
+        {
+            "id": 1,
+            "name": "Project 1",
+            "description": "Project 1 description",
+            "owner_id": 1,
+            "created_at": "2026-07-31 20:06:36.627073+00",
+            "updated_at": "2026-07-31 20:06:36.627073+00"
+        },
+        {
+            "id": 2,
+            "name": "Project 2",
+            "description": "Project 2 description",
+            "owner_id": 1,
+            "created_at": "2026-07-31 20:06:36.627073+00",
+            "updated_at": "2026-07-31 20:06:36.627073+00"
+        },
+    ]
+}
+```
+An empty array will be returned if there are no projects owned by the user or the database is empty.
+
+Returns an `Error 401` if the user is not signed in.
+
+### `GET /projects/{id}`
+
+Returns a project by id if it is owned by the user making the request.
 
 ```json
     {
-        "id": 1,
-        "title": "Task 1",
-        "description": "Task 1 description",
-        "status": "Todo"
+    "project":
+        {
+            "id": 1,
+            "name": "Project 1",
+            "description": "Project 1 description",
+            "owner_id": 1,
+            "created_at": "2026-07-31 20:06:36.627073+00",
+            "updated_at": "2026-07-31 20:06:36.627073+00"
+        }
     }
 ```
 
-Returns an `Error 404` response if the task does not exist.
+Returns an `Error 401` if the user is not signed in.
+Returns an `Error 403` if the project is owned another user.
+Returns an `Error 404` response if the project does not exist.
+
+### `POST /projects`
+
+Creates a project and returns the created project if successfull.
+
+```json
+    {
+    "project":         
+        {
+            "id": 1,
+            "name": "Project 1",
+            "description": "Project 1 description",
+            "owner_id": 1,
+            "created_at": "2026-07-31 20:06:36.627073+00",
+            "updated_at": "2026-07-31 20:06:36.627073+00"
+        },
+  }
+```
 
 Returns an `Error 400` response if the request body is invalid.
-
-### `DELETE /tasks/{id}`
-
-Deletes a task by id.
-
-Returns an `Error 404` response if the task does not exist.
-
----
-
-# Architecture Overview
-
-The system follows a typical web architecture.
-
-```shell
-Browser Client
-|
-v
-REST API
-|
-v
-PostgreSQL
-```
+Returns an `Error 401` if the user is not signed in.
 
 # Repository Structure
 
-```shell
+```bash
 cs453-project-template
 │
 ├── apps
@@ -197,20 +339,20 @@ cs453-project-template
 
 ---
 
-# Development Setup
+# Environment Setup And Running
 
 ## 1. Clone the repository
 
-```shell
-git clone https://github.com/chaseg48/cs553-midterm.git
-cd cs453-project-template
+```bash
+git clone https://github.com/chaseg48/cs453-project.git
+cd cs453-project
 ```
 
 ## 2. Start the database
 
 This project uses Docker to run PostgreSQL locally.
 
-```shell
+```bash
 docker-compose up -d
 ```
 
@@ -220,34 +362,76 @@ This will start a PostgreSQL database container.
 
 ## 3. Run the schema
 
-```shell
+```bash
 psql postgresql://postgres:postgres@localhost:5432/cs453 -f database/schema.sql
 ```
 
 ---
 
-## 4. Install dependencies
+## 4. Install server dependencies
 
-```shell
+```bash
 cd apps/api
 npm install
 ```
 
 ---
 
-## 5. Run the server
-```shell
-npm run dev
+## 5. Build the server
+```bash
+cd apps/api
+npm run build
+```
+
+---
+
+## 6. Install client dependencies
+
+```bash
+cd apps/client
+npm install
+```
+
+---
+
+## 7. Build the client
+```bash
+cd apps/client
+npm run build
+```
+
+---
+
+## 8. Define a JWT_SECRET in the bash console
+```bash
+export JWT_SECRET="yoursecrethere"
+```
+
+---
+
+## 9. Run the server
+```bash
+cd apps/api
+npm run start
+```
+
+---
+
+## 10. Run the client from another bash console
+```bash
+cd apps/client
+npm run start
 ```
 
 
-The API server should start locally.
+The API server should start locally and the client program should execute to test the server.
 
 ---
 
 # Automatic Tests
 
-This repository contains an automatic test suite. Execute the following command in a bash terminal to the run tests.
+This repository contains an automatic test suite with 42 tests. Execute the following command in a bash console to the
+run tests. Ensure that you have defined `JWT_SECRET` in the console as before.
 
 ```bash
 npm run test
@@ -256,26 +440,8 @@ npm run test
 
 # Reflection Questions
 
-### 1. What is the difference between an in-memory API and a database-backed API?
+Reflection questions are answered in the answers.md file.
 
-An in-memory API is volatile and only persists as long as the server is running. A database-backed API is persistent.
+# Graduate Extension
 
-### 2. Why is it useful to separate routes, services, and database logic?
-
-It is useful for making the code more modular. It is also useful in that individual components of the code can be modified
-without having to update everything, so long as the interfaces remain the same.
-
-### 3. What HTTP status codes did you use, and why?
-
-Codes 200-299 represent successfull/normal results. I used 200 for `GET` and `PATCH`, 201 for `POST`, and 204 for `DELETE`.
-Codes 400-499 represent client error. I used 400 for invalid requests and 404 for missing resources. Codes 500-599 represent
-server errors. I used 500 for internal server errors.
-
-### 4. What happens when a client requests a task ID that does not exist?
-
-A 404 error response is returned to the client.
-
-### 5. What was the hardest part of connecting the API to PostgreSQL?
-
-The code to connect the postgreSQL database to the server was given. The difficult part of interfacing the API with
-PostgreSQL for me was forming correct SQL commands.
+The graduate extension is located in the lessons-learned.md file.

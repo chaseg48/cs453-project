@@ -1,13 +1,30 @@
 import { Request } from "express-serve-static-core";
 import { ParsedQs } from "qs";
 import { pool } from "../db/pool";
+import { QueryResult } from "pg";
 
 export async function getTasks(req: Request) {
     let result = {status: 0, rows: Array(), rowCount: 0};
-    let text = `SELECT *
-         FROM tasks
-         ORDER BY id `;
-    const query = await pool.query(text);
+    let text = '';
+    var values;
+    var query;
+    if (req.session.role == 'user') {
+        text = `SELECT *
+            FROM tasks
+            WHERE assigned_to = $1 `;
+        values = [req.session.userId];
+        
+    } else if (req.session.role == 'admin') {
+        text = `SELECT *
+            FROM tasks
+            ORDER BY id `;
+    } else {
+        result.status = 500;
+        return result;
+    }
+    
+    query = await pool.query(text, values);
+
     if (query.rows[0] || query.rowCount == 0) {
         result.status = 200;
         result.rows = query.rows;
@@ -27,7 +44,7 @@ export async function getTasks(req: Request) {
 export async function getTask(req: Request) {
     let result = { status: 0, rows: Array()};
     const text = `SELECT * FROM tasks WHERE id = $1`;
-    const value = [req.params.id];
+    const value = [Number(req.params.id)];
     const query = await pool.query(text, value);
     if (query.rows[0]) {
         if (query.rows[0].assigned_to == req.session.userId || req.session.role == "admin") {
@@ -47,7 +64,7 @@ export async function createTask(req: Request) {
     let result = { status: 0, rows: Array()};
     const text = `INSERT INTO tasks (title, description, status, project_id, assigned_to)
                   VALUES ($1, $2, $3, $4, $5)
-                  RETURNING id, title, description, status`;
+                  RETURNING *`;
     const values = [req.body.title, req.body.description, req.body.status, req.body.project, req.session.userId];
     const query = await pool.query(text, values);
     if (query.rows[0]) {
@@ -70,7 +87,7 @@ export async function updateTask(req: Request) {
             text = `UPDATE tasks
                         SET title = COALESCE($2, title), description = COALESCE($3, description), status = COALESCE($4, status)
                         WHERE id = $1
-                        RETURNING id, title, description, status`;
+                        RETURNING *`;
             values = [req.params.id, req.body.title, req.body.description, req.body.status];
             query = await pool.query(text, values);
             if (query.rows[0]) {

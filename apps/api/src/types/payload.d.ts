@@ -1,0 +1,9 @@
+import 'jsonwebtoken';
+
+declare module 'jsonwebtoken' {
+    export interface JwtPayload  {
+        id: number,
+        email: string,
+        role: string
+    }
+}

@@ -2,10 +2,27 @@ import { pool } from "../db/pool";
 import { Request } from "express-serve-static-core";
 import { ParsedQs } from "qs";
 
-export async function getProjects() {
-    let result = { status: 0, rows: Array()};
-    const text = 'SELECT * FROM projects ORDER BY id';
-    const query = await pool.query(text);
+export async function getProjects(req: Request) {
+    let result = {status: 0, rows: Array(), rowCount: 0};
+    let text = '';
+    var values;
+    var query;
+    if (req.session.role == 'user') {
+        text = `SELECT *
+            FROM projects
+            WHERE owner_id = $1 `;
+        values = [req.session.userId];
+        
+    } else if (req.session.role == 'admin') {
+        text = `SELECT *
+            FROM projects
+            ORDER BY id `;
+    } else {
+        result.status = 500;
+        return result;
+    }
+    
+    query = await pool.query(text, values);
     result.status = 200;
     result.rows = query.rows;
     return result;
@@ -56,7 +73,7 @@ export async function deleteProject(req: Request) {
             let text = 'DELETE FROM projects WHERE id = $1 RETURNING *';
             let values = [req.params.id];
             const query = await pool.query(text, values);
-            result.status = 200;
+            result.status = 204;
         } else {
             result.status = 403;
         }
