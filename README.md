@@ -368,7 +368,7 @@ psql postgresql://postgres:postgres@localhost:5432/cs453 -f database/schema.sql
 
 ---
 
-## 4. Install dependencies
+## 4. Install server dependencies
 
 ```bash
 cd apps/api
@@ -385,7 +385,16 @@ npm run build
 
 ---
 
-## 6. Build the client
+## 6. Install client dependencies
+
+```bash
+cd apps/client
+npm install
+```
+
+---
+
+## 7. Build the client
 ```bash
 cd apps/client
 npm run build
@@ -393,14 +402,14 @@ npm run build
 
 ---
 
-## 7. Define a JWT_SECRET in the bash console
+## 8. Define a JWT_SECRET in the bash console
 ```bash
 export JWT_SECRET="yoursecrethere"
 ```
 
 ---
 
-## 8. Run the server
+## 9. Run the server
 ```bash
 cd apps/api
 npm run start
@@ -408,7 +417,7 @@ npm run start
 
 ---
 
-## 9. Run the client from another bash console
+## 10. Run the client from another bash console
 ```bash
 cd apps/client
 npm run start
