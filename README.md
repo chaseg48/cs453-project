@@ -441,3 +441,7 @@ npm run test
 # Reflection Questions
 
 Reflection questions are answered in the answers.md file.
+
+# Graduate Extension
+
+The graduate extension is located in the lessons-learned.md file.
