@@ -11,7 +11,7 @@ userRouter.get("/", authenticate, async (req, res) => {
         if (result.status == 200) {
             return res.status(200).json({ users: result.rows });
         } else if (result.status == 403) {
-            return res.status(403).json({ error: "Not authorized", message: "You are not authorized to perform this action" });
+            return res.status(403).json({ error: "Not authorized", message: "You are not authorized to perform this action." });
         } else {
             return res.status(500).json({ error: "Internal database error" });
         }
@@ -33,7 +33,7 @@ userRouter.get("/:id", authenticate, async (req, res) => {
         } else if (result.status == 404) {
             return res.status(404).json({ error: "User not found", message: "A user with this id does not exist." });
         } else if (result.status == 403) {
-            return res.status(403).json({ error: "Not authorized", message: "You are not authorized to perform this action" });
+            return res.status(403).json({ error: "Not authorized", message: "You are not authorized to perform this action." });
         } else {
             return res.status(500).json({ error: "Internal database error" });
         }

@@ -8,7 +8,7 @@ export const projectRouter = express.Router();
 
 projectRouter.get("/", authenticate, async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const result = await getProjects();
+        const result = await getProjects(req);
         if (result.status == 200) {
             return res.status(200).json({ projects: result.rows });
         }
@@ -27,7 +27,7 @@ projectRouter.get("/:id", authenticate, async (req: Request, res: Response, next
         if (result.status == 200) {
             return res.status(200).json({ project: result.rows[0] });
         } else if (result.status == 403) {
-            return res.status(403).json({ error: "Not authorized", message: "You are unauthorized to perform this action." });
+            return res.status(403).json({ error: "Not authorized", message: "You are not authorized to perform this action." });
         } else if (result.status == 404) {
             return res.status(404).json({ error: "Project not found", message: "A project with this id does not exist." });
         }
@@ -60,12 +60,12 @@ projectRouter.delete("/:id", authenticate, async (req: Request, res: Response, n
 
     try {
         const result = await deleteProject(req);
-        if (result.status == 200) {
-            return res.status(200).json({ message: "Project deleted" });
+        if (result.status == 204) {
+            return res.status(204).json({ message: "Project deleted" });
         } else if (result.status == 404) {
             return res.status(404).json({ error: "Project not found", message: "A project with this id does not exist." });
         } else if (result.status == 403) {
-            return res.status(403).json({ error: "Not authorized", message: "You are unauthorized to perform this action." });
+            return res.status(403).json({ error: "Not authorized", message: "You are not authorized to perform this action." });
         }
     } catch (error) {
         return res.status(500).json({ error: "Server error", message: "Internal servor error" });

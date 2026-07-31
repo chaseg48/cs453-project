@@ -8,6 +8,5 @@ export const env = {
 	databaseUrl:
 		process.env.DATABASE_URL ||
 		"postgresql://postgres:postgres@localhost:5432/cs453",
-	jwtExpiresIn: "1h",
-	jwtSecret: "development"
+	jwtSecret: process.env.JWT_SECRET || "development"
 };

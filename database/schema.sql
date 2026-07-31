@@ -28,10 +28,10 @@ CREATE TABLE IF NOT EXISTS tasks (
     assigned_to int,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    CONSTRAINT fk_Assignee
-    FOREIGN KEY (assigned_to)
-    REFERENCES users(id),
-    CONSTRAINT fk_Project
+    CONSTRAINT fk_Assignee 
+    FOREIGN KEY (assigned_to) 
+    REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_Project 
     FOREIGN KEY (project_id)
     REFERENCES projects(id) ON DELETE CASCADE
 );
