@@ -430,7 +430,7 @@ The API server should start locally and the client program should execute to tes
 
 # Automatic Tests
 
-This repository contains an automatic test suite with 42 tests. Execute the following command in a bash console to the
+This repository contains an automatic test suite with 44 tests. Execute the following command in a bash console to the
 run tests. Ensure that you have defined `JWT_SECRET` in the console as before.
 
 ```bash

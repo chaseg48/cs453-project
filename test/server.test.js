@@ -639,3 +639,30 @@ describe("Authorization tests", () => {
       .expect(204);
   });
 });
+
+describe("Invalid route test", () => {
+
+  test("GET /auth/bad returns a 404 error", async () => {
+    const app = createApp();
+
+    const response = await request(app)
+      .get("/auth/bad")
+      .set("authorization", String("Bearer " + admin_token))
+      .expect(404);
+
+    expect(response.body.error).toEqual("Not found");
+    expect(response.body.message).toEqual("Path not found.");
+  });
+
+  test("GET /bad returns a 404 error", async () => {
+    const app = createApp();
+
+    const response = await request(app)
+      .get("/bad")
+      .set("authorization", String("Bearer " + admin_token))
+      .expect(404);
+
+    expect(response.body.error).toEqual("Not found");
+    expect(response.body.message).toEqual("Path not found.");
+  });
+});
