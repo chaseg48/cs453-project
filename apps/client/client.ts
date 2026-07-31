@@ -311,7 +311,7 @@ async function main() {
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({name: "Admin", email: "admin@uah.edu", password: "myadminpassword", role: "admin"}),
+        body: JSON.stringify({ name: "Admin", email: "admin@uah.edu", password: "myadminpassword", role: "admin" }),
     });
 
     data = await response.json();
@@ -378,9 +378,6 @@ async function main() {
             'authorization': String('Bearer ' + adminToken)
         },
     });
-
-    data = await response.json();
-    console.log(data.message);
 
     console.log("\n\n----------------------------Admin Get All Projects----------------------\n")
     response = await fetch('http://localhost:3000/projects', {
