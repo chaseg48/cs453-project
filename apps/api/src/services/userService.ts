@@ -26,7 +26,7 @@ export async function getUser(req: Request) {
         result.status = 200;
         result.rows = query.rows;
     } else {
-        result.status = 403;
+        result.status = 500;
     }
     return result;
 }

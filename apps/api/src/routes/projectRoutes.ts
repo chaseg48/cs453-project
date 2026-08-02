@@ -3,10 +3,13 @@ import express from "express";
 import { createProject, deleteProject, getProject, getProjects } from "../services/projectService";
 import { authenticate } from "../middleware/authenticate";
 import { validateCreateProject, validateId } from "../validation/validation";
+import { requireRole } from "../middleware/authorize";
 
 export const projectRouter = express.Router();
+projectRouter.use(authenticate);
+projectRouter.use(requireRole(["user", "admin"]));
 
-projectRouter.get("/", authenticate, async (req: Request, res: Response, next: NextFunction) => {
+projectRouter.get("/", async (req: Request, res: Response, next: NextFunction) => {
     try {
         const result = await getProjects(req);
         if (result.status == 200) {
@@ -17,7 +20,7 @@ projectRouter.get("/", authenticate, async (req: Request, res: Response, next: N
     }
 });
 
-projectRouter.get("/:id", authenticate, async (req: Request, res: Response, next: NextFunction) => {
+projectRouter.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
     if (!validateId(req.params.id)) {
         return res.status(400).json({ error: "Invalid request", message: "Enter a valid project id." });
     }
@@ -36,7 +39,7 @@ projectRouter.get("/:id", authenticate, async (req: Request, res: Response, next
     }
 });
 
-projectRouter.post("/", authenticate, async (req: Request, res: Response, next: NextFunction) => {
+projectRouter.post("/", async (req: Request, res: Response, next: NextFunction) => {
     if (!validateCreateProject(req.body.name, req.body.description)) {
         return res.status(400).json({ error: "Invalid request", message: "Enter a valid project name and description." });
     }
@@ -53,7 +56,7 @@ projectRouter.post("/", authenticate, async (req: Request, res: Response, next: 
     }
 });
 
-projectRouter.delete("/:id", authenticate, async (req: Request, res: Response, next: NextFunction) => {
+projectRouter.delete("/:id", async (req: Request, res: Response, next: NextFunction) => {
     if (!validateId(req.params.id)) {
         return res.status(400).json({ error: "Invalid request", message: "Enter a valid project id." });
     }

@@ -12,10 +12,13 @@ import { getTasks,
 		 deleteTask} from "../services/taskService"
 import { authenticate } from "../middleware/authenticate";
 import { getProject } from "../services/projectService";
+import { requireRole } from "../middleware/authorize";
 
 export const taskRouter = Router();
+taskRouter.use(authenticate);
+taskRouter.use(requireRole(["user", "admin"]));
 
-taskRouter.get("/", authenticate, async (req: Request, res: Response, next: NextFunction) => {
+taskRouter.get("/", async (req: Request, res: Response, next: NextFunction) => {
 	try {
 		const result = await getTasks(req);
 		if (result.status == 200) {
@@ -27,7 +30,7 @@ taskRouter.get("/", authenticate, async (req: Request, res: Response, next: Next
 	}
 });
 
-taskRouter.get("/:id", authenticate, async (req: Request, res: Response, next: NextFunction) => {
+taskRouter.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
 	if (!validateId(req.params.id)) {
 		return res.status(400).json({ error: "Invalid request", message: "Enter a valid integer id." });
 	}
@@ -37,7 +40,7 @@ taskRouter.get("/:id", authenticate, async (req: Request, res: Response, next: N
 		if (result.status == 200) {
 			return res.status(200).json({ task: result.rows });
 		} else if (result.status == 403) {
-			return res.status(403).json({error: "Not authorized", message: "You are not authorized to perform this action."});
+			return res.status(403).json({error: "Forbidden", message: "You are not authorized to perform this action."});
 		} else if (result.status == 404) {
 			return res.status(404).json({error: "Not found", message: "A task with this id does not exist." });
 		}
@@ -47,7 +50,7 @@ taskRouter.get("/:id", authenticate, async (req: Request, res: Response, next: N
 	}
 });
 
-taskRouter.post("/", authenticate, async (req: Request, res: Response, next: NextFunction) => {
+taskRouter.post("/", async (req: Request, res: Response, next: NextFunction) => {
 	if (!validateCreateTask(req.body.title, req.body.description, req.body.status, req.body.project)) {
 		return res.status(400).json({ error: "Invalid request", message: "Enter a valid string for title, description, status and project id." });
 	}
@@ -56,7 +59,7 @@ taskRouter.post("/", authenticate, async (req: Request, res: Response, next: Nex
 	projectReq.params.id = String(req.body.project);
 	let project = await getProject(projectReq);
 	if (project.status == 403) {
-		return res.status(403).json({error: "Not authorized", message: "You are not authorized to perform this action."});
+		return res.status(403).json({error: "Forbidden", message: "You are not authorized to perform this action."});
 	} else if (project.status == 404) {
 		return res.status(404).json({ error: "Not found", message: "A project with this id does not exist."});
 	}
@@ -75,7 +78,7 @@ taskRouter.post("/", authenticate, async (req: Request, res: Response, next: Nex
 	}
 });
 
-taskRouter.patch("/:id", authenticate, async (req: Request, res: Response, next: NextFunction) => {
+taskRouter.patch("/:id", async (req: Request, res: Response, next: NextFunction) => {
 	if (!validateUpdateTask(req.body.title, req.body.description, req.body.status, req.body.project)) {
 		return res.status(400).json({ error: "Invalid request", message: "Enter a valid string for title, description, or status." });
 	}
@@ -89,7 +92,7 @@ taskRouter.patch("/:id", authenticate, async (req: Request, res: Response, next:
 		projectReq.params.id = String(req.body.project);
 		let project = await getProject(projectReq);
 		if (project.status == 403) {
-			return res.status(403).json({error: "Not authorized", message: "You are not authorized to perform this action."});
+			return res.status(403).json({error: "Forbidden", message: "You are not authorized to perform this action."});
 		} else if (project.status == 404) {
 			return res.status(404).json({ error: "Project not found", message: "A project with this id does not exist."});
 		}
@@ -100,7 +103,7 @@ taskRouter.patch("/:id", authenticate, async (req: Request, res: Response, next:
 		if (result.status == 200) {
 			return res.status(200).json({ task: result.rows[0] });
 		} else if (result.status == 403) {
-			return res.status(403).json({ error: "Not authorized", message: "You are not authorized to perform this action." });
+			return res.status(403).json({ error: "Forbidden", message: "You are not authorized to perform this action." });
 		} else if (result.status == 404) {
 			return res.status(404).json({error: "Not found", message: "A task with this id does not exist." });
 		}
@@ -110,7 +113,7 @@ taskRouter.patch("/:id", authenticate, async (req: Request, res: Response, next:
 	}
 });
 
-taskRouter.delete("/:id", authenticate, async (req: Request, res: Response, next: NextFunction) => {
+taskRouter.delete("/:id", async (req: Request, res: Response, next: NextFunction) => {
 	if (!validateId(req.params.id)) {
 		return res.status(400).json({ error: "Invalid request", message: "Enter a valid integer id." });
 	}
@@ -120,7 +123,7 @@ taskRouter.delete("/:id", authenticate, async (req: Request, res: Response, next
 		if (result.status == 204) {
 			return res.status(204).json({ message: "Task deleted" });
 		} else if (result.status == 403) {
-			return res.status(403).json({ error: "Not authorized", message: "You are not authorized to perform this action." });
+			return res.status(403).json({ error: "Forbidden", message: "You are not authorized to perform this action." });
 		} else if (result.status == 404) {
 			return res.status(404).json({error: "Not found", message: "A task with this id does not exist." });
 		}

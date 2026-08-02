@@ -7,11 +7,11 @@ user is authorized to perform the action or access the resource that they are at
 # 2. Why should passwords be hashed instead of stored directly?
 
 Passwords are hashed so that if the database was compromised the raw passwords would not be exposed. Having the password
-hash does not guaruntee that the original password can be found. In such an event, hashes can be changed on the server side.
+hash does not guaruntee that the original password can be found.
 
 # 3. What information did you include in your JWT, and why?
 
-I included user id and role in the token. User is is used to compare against stored ownership/assignment information
+I included user id, email, and role in the token. User is is used to compare against stored ownership/assignment information
 to see if the user is authorized to modify resources. The role is used to check if the user is admin, in which case
 the privilege is elevated.
 
