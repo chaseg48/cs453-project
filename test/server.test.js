@@ -526,6 +526,7 @@ describe("Authorization tests", () => {
         .send({title: "User 1 Task", description: "User 1 Owned Task", status: "To Do", project: Number(user_1_project)})
         .set("Content-Type", "application/json")
         .set("Accept", "application/json")
+        .expect(201)
 
     user_1_task = response.body.task.id;
   });
@@ -540,7 +541,7 @@ describe("Authorization tests", () => {
       .set("Accept", "application/json")
       .expect(403);
 
-    expect(response.body.error).toEqual("Not authorized");
+    expect(response.body.error).toEqual("Forbidden");
     expect(response.body.message).toEqual("You are not authorized to perform this action.");
   });
 
@@ -554,7 +555,7 @@ describe("Authorization tests", () => {
       .set("Accept", "application/json")
       .expect(403);
 
-    expect(response.body.error).toEqual("Not authorized");
+    expect(response.body.error).toEqual("Forbidden");
     expect(response.body.message).toEqual("You are not authorized to perform this action.");
   });
 
@@ -567,7 +568,7 @@ describe("Authorization tests", () => {
       .set("Accept", "application/json")
       .expect(403);
 
-    expect(response.body.error).toEqual("Not authorized");
+    expect(response.body.error).toEqual("Forbidden");
     expect(response.body.message).toEqual("You are not authorized to perform this action.");
   });
 
@@ -580,7 +581,7 @@ describe("Authorization tests", () => {
       .set("Accept", "application/json")
       .expect(403);
 
-    expect(response.body.error).toEqual("Not authorized");
+    expect(response.body.error).toEqual("Forbidden");
     expect(response.body.message).toEqual("You are not authorized to perform this action.");
   });
 
@@ -593,7 +594,7 @@ describe("Authorization tests", () => {
       .set("Accept", "application/json")
       .expect(403);
 
-    expect(response.body.error).toEqual("Not authorized");
+    expect(response.body.error).toEqual("Forbidden");
     expect(response.body.message).toEqual("You are not authorized to perform this action.");
   });
 

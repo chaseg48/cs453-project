@@ -402,9 +402,14 @@ npm run build
 
 ---
 
-## 8. Define a JWT_SECRET in the bash console
+## 8. Define environment variables
+Copy the .env.example file and remove the .example extension. Set the variable values in the file. Alternatively,
+you can specify the environment variables manually in a bash terminal.
+
 ```bash
 export JWT_SECRET="yoursecrethere"
+export PORT="3000"
+export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/cs453"
 ```
 
 ---
@@ -417,7 +422,7 @@ npm run start
 
 ---
 
-## 10. Run the client from another bash console
+## 10. Run the client from another bash terminal
 ```bash
 cd apps/client
 npm run start
@@ -430,8 +435,8 @@ The API server should start locally and the client program should execute to tes
 
 # Automatic Tests
 
-This repository contains an automatic test suite with 44 tests. Execute the following command in a bash console to the
-run tests. Ensure that you have defined `JWT_SECRET` in the console as before.
+This repository contains an automatic test suite with 44 tests. Execute the following command in a bash terminal to the
+run tests. Ensure that you have defined all environment variables in `Step 8`.
 
 ```bash
 npm run test
