@@ -16,7 +16,7 @@ authRouter.post("/register", async (req: Request, res: Response) => {
         const result = await registerUser(req.body.name, req.body.email, req.body.password, req.body.role);
 
         if (result.status == 201) {
-            return res.status(201).json({message: String("User " + result.rows[0].name + " created")} )
+            return res.status(201).json({user: {name: result.rows[0].name, id: result.rows[0].id}});
         } else if (result.status == 401) {
             return res.status(401).json({error: "Duplicate email", message: "A user with this email already exists"});
         }

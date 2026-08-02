@@ -11,20 +11,24 @@ var user_1_task;
 var user_2_task;
 var user_1_project;
 var user_2_project;
+var user_1_id;
+var user_2_id;
 
 afterAll(async () => {
-  pool.query(`DELETE FROM users`);
-  pool.query(`DELETE FROM tasks`);
-  pool.query(`DELETE FROM projects`);
+  pool.query(`DELETE FROM users WHERE name IN ('User 1', 'User 2', 'admin');`);
+  pool.query(`DELETE FROM tasks WHERE title IN ('User 1 Task');`);
+  pool.query(`DELETE FROM projects WHERE name IN ('User 1 Project');`);
 
-  pool.query('ALTER SEQUENCE users_id_seq RESTART WITH 1');
-  pool.query('ALTER SEQUENCE projects_id_seq RESTART WITH 1');
-  pool.query('ALTER SEQUENCE tasks_id_seq RESTART WITH 1');
+  // pool.query('ALTER SEQUENCE users_id_seq RESTART WITH 1');
+  // pool.query('ALTER SEQUENCE projects_id_seq RESTART WITH 1');
+  // pool.query('ALTER SEQUENCE tasks_id_seq RESTART WITH 1');
 });
 
 beforeAll(async () => {
-  pool.query(`DELETE FROM users`);
-  pool.query('ALTER SEQUENCE users_id_seq RESTART WITH 1');
+  // pool.query(`DELETE FROM users WHERE name IN ('User 1', 'User 2', 'admin');`);
+  // pool.query(`DELETE FROM tasks WHERE title IN ('User 1 Task');`);
+  // pool.query(`DELETE FROM projects WHERE name IN ('User 1 Project');`);
+  // pool.query('ALTER SEQUENCE users_id_seq RESTART WITH 1');
 });
 
 // Return the health of the server
@@ -75,7 +79,8 @@ describe("Authentication Tests", () => {
         .set("Accept", "application/json")
         .expect(201);
 
-    expect(response.body.message).toEqual("User User 1 created");
+    expect(response.body.user.name).toEqual("User 1");
+    user_1_id = response.body.user.id;
   });
 
   test("POST /auth/register returns 400 for no email", async () => {
@@ -324,10 +329,9 @@ beforeAll(async () => {
         .set("Accept", "application/json")
         .expect(201);
 
-    expect(response.body.project.id).toEqual(1);
     expect(response.body.project.name).toEqual("User 1 Project");
     expect(response.body.project.description).toEqual("User 1 Owned Project");
-    expect(response.body.project.owner_id).toEqual(1);
+    expect(response.body.project.owner_id).toEqual(user_1_id);
 
     user_1_project = response.body.project.id;
   });
@@ -343,11 +347,10 @@ beforeAll(async () => {
         .set("Accept", "application/json")
         .expect(201);
 
-    expect(response.body.task.id).toEqual(1);
     expect(response.body.task.title).toEqual("User 1 Task");
     expect(response.body.task.description).toEqual("User 1 Owned Task");
     expect(response.body.task.status).toEqual("To Do");
-    expect(response.body.task.assigned_to).toEqual(1);
+    expect(response.body.task.assigned_to).toEqual(user_1_id);
     expect(response.body.task.project_id).toEqual(user_1_project);
     user_1_task = response.body.task.id;
   });
@@ -363,11 +366,10 @@ beforeAll(async () => {
         .set("Accept", "application/json")
         .expect(200);
 
-    expect(response.body.task.id).toEqual(1);
     expect(response.body.task.title).toEqual("User 1 Task Updated");
     expect(response.body.task.description).toEqual("User 1 Owned Task Updated");
     expect(response.body.task.status).toEqual("In Progress");
-    expect(response.body.task.assigned_to).toEqual(1);
+    expect(response.body.task.assigned_to).toEqual(user_1_id);
     expect(response.body.task.project_id).toEqual(user_1_project);
   });
 
@@ -381,11 +383,10 @@ beforeAll(async () => {
         .set("Accept", "application/json")
         .expect(200);
 
-    expect(response.body.task.id).toEqual(1);
     expect(response.body.task.title).toEqual("User 1 Task Updated");
     expect(response.body.task.description).toEqual("User 1 Owned Task Updated");
     expect(response.body.task.status).toEqual("In Progress");
-    expect(response.body.task.assigned_to).toEqual(1);
+    expect(response.body.task.assigned_to).toEqual(user_1_id);
     expect(response.body.task.project_id).toEqual(user_1_project);
   });
 
@@ -402,7 +403,7 @@ beforeAll(async () => {
     expect(response.body.project.id).toEqual(user_1_project);
     expect(response.body.project.name).toEqual("User 1 Project");
     expect(response.body.project.description).toEqual("User 1 Owned Project");
-    expect(response.body.project.owner_id).toEqual(1);
+    expect(response.body.project.owner_id).toEqual(user_1_id);
   });
 
   test("DELETE /tasks/:id deletes a task", async () => {
@@ -530,6 +531,41 @@ describe("Authorization tests", () => {
 
     user_1_task = response.body.task.id;
   });
+
+  test("GET /tasks/:id returns a 403 when User 2 tries to get User 1's Task", async () => {
+    const app = createApp();
+    const response = await request(app)
+      .get(String("/tasks/" + user_1_task))
+      .set("authorization", String("Bearer " + user_2_token))
+      .expect(403);
+
+    expect(response.body.error).toEqual("Forbidden");
+    expect(response.body.message).toEqual("You are not authorized to perform this action.");
+  });
+
+  test("GET /projects/:id returns a 403 when User 2 tries to get User 1's Project", async () => {
+    const app = createApp();
+    const response = await request(app)
+      .get(String("/projects/" + user_1_project))
+      .set("authorization", String("Bearer " + user_2_token))
+      .expect(403);
+
+    expect(response.body.error).toEqual("Forbidden");
+    expect(response.body.message).toEqual("You are not authorized to perform this action.");
+  });
+
+  test("GET /tasks returns a 200 when Admin tries to get User 1's Task", async () => {
+    const app = createApp();
+    const response = await request(app)
+      .get(String("/tasks/" + user_1_task))
+      .set("authorization", String("Bearer " + admin_token))
+      .expect(200);
+
+    expect(response.body.task.title).toEqual("User 1 Task");
+    expect(response.body.task.description).toEqual("User 1 Owned Task");
+    expect(response.body.task.status).toEqual("To Do");
+    expect(response.body.task.project_id).toEqual(user_1_project);
+  });
   
   test("POST /tasks returns a 403 when User 2 tries to create a task in User 1's project", async () => {
     const app = createApp();
@@ -613,7 +649,7 @@ describe("Authorization tests", () => {
   test("GET /users/:id returns a 200 for admin", async () => {
     const app = createApp();
     const response = await request(app)
-      .get("/users/1")
+      .get(String("/users/" + user_1_id))
       .set("authorization", String("Bearer " + admin_token))
       .set("Content-Type", "application/json")
       .set("Accept", "application/json")

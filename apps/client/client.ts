@@ -44,7 +44,7 @@ async function main() {
     });
 
     data = await response.json();
-    console.log(data.message);
+    console.log(data);
 
     console.log("\n----------------------------User 1 Login/Save Token----------------------\n")
     response = await fetch('http://localhost:3000/auth/login', {
@@ -57,7 +57,7 @@ async function main() {
     if (response.status == 200) {
         data = await response.json() as LoginResponse;
         accessToken1 = data.accessToken;
-        console.log(data.message);
+        console.log(data);
     } else {
         console.log("Error: Could not log in");
         return;
@@ -173,7 +173,7 @@ async function main() {
     });
 
     data = await response.json();
-    console.log(data.message);
+    console.log(data);
 
     console.log("\n----------------------------User 2 Login/Save Token----------------------\n")
     response = await fetch('http://localhost:3000/auth/login', {

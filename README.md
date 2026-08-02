@@ -190,7 +190,10 @@ Registers a new user.
 
 ```json
 {
-    "message": "User User 1 created"
+    "user": {
+        "name": "Your Name",
+        "id": 1
+    }
 }
 ```
 
@@ -490,7 +493,7 @@ The API server should start locally and the client program should execute to tes
 
 # Automatic Tests
 
-This repository contains an automatic test suite with 44 tests. Execute the following command in a bash terminal to the
+This repository contains an automatic test suite with 47 tests. Execute the following command in a bash terminal to the
 run tests. Ensure that you have defined all environment variables in `Step 8`.
 
 In the top level folder, install test dependencies
@@ -503,6 +506,9 @@ From the top level folder, run the tests
 ```bash
 npm run test
 ```
+
+## Warning: Running the auto test suite will reset all of the database tables.
+
 ---
 
 # Reflection Questions

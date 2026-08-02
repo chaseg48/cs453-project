@@ -29,9 +29,9 @@ projectRouter.get("/:id", async (req: Request, res: Response, next: NextFunction
         if (result.status == 200) {
             return res.status(200).json({ project: result.rows[0] });
         } else if (result.status == 403) {
-            return res.status(403).json({ error: "Not authorized", message: "You are not authorized to perform this action." });
+            return res.status(403).json({ error: "Forbidden", message: "You are not authorized to perform this action." });
         } else if (result.status == 404) {
-            return res.status(404).json({ error: "Project not found", message: "A project with this id does not exist." });
+            return res.status(404).json({ error: "Not found", message: "A project with this id does not exist." });
         }
     } catch (error) {
         return res.status(500).json({ error: "Server error", message: "Internal servor error." });
@@ -65,7 +65,7 @@ projectRouter.delete("/:id", async (req: Request, res: Response, next: NextFunct
         } else if (result.status == 404) {
             return res.status(404).json({ error: "Project not found", message: "A project with this id does not exist." });
         } else if (result.status == 403) {
-            return res.status(403).json({ error: "Not authorized", message: "You are not authorized to perform this action." });
+            return res.status(403).json({ error: "Forbidden", message: "You are not authorized to perform this action." });
         }
     } catch (error) {
         return res.status(500).json({ error: "Server error", message: "Internal servor error" });
