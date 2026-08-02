@@ -388,7 +388,7 @@ npm run build
 ## 6. Install client dependencies
 
 ```bash
-cd apps/client
+cd ../client
 npm install
 ```
 
@@ -396,13 +396,13 @@ npm install
 
 ## 7. Build the client
 ```bash
-cd apps/client
 npm run build
 ```
 
 ---
 
 ## 8. Define environment variables
+
 Copy the .env.example file and remove the .example extension. Set the variable values in the file. Alternatively,
 you can specify the environment variables manually in a bash terminal.
 
@@ -438,6 +438,13 @@ The API server should start locally and the client program should execute to tes
 This repository contains an automatic test suite with 44 tests. Execute the following command in a bash terminal to the
 run tests. Ensure that you have defined all environment variables in `Step 8`.
 
+In the top level folder, install test dependencies
+
+```bash
+npm install
+```
+
+From the top level folder, run the tests
 ```bash
 npm run test
 ```
