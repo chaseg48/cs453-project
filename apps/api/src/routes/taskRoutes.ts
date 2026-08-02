@@ -31,11 +31,10 @@ taskRouter.get("/", async (req: Request, res: Response, next: NextFunction) => {
 });
 
 taskRouter.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
-	if (!validateId(req.params.id)) {
-		return res.status(400).json({ error: "Invalid request", message: "Enter a valid integer id." });
-	}
-	
 	try {
+		if (!validateId(req.params.id)) {
+			return res.status(400).json({ error: "Invalid request", message: "Enter a valid integer id." });
+		}
 		const result = await getTask(req);
 		if (result.status == 200) {
 			return res.status(200).json({ task: result.rows });
@@ -51,20 +50,20 @@ taskRouter.get("/:id", async (req: Request, res: Response, next: NextFunction) =
 });
 
 taskRouter.post("/", async (req: Request, res: Response, next: NextFunction) => {
-	if (!validateCreateTask(req.body.title, req.body.description, req.body.status, req.body.project)) {
-		return res.status(400).json({ error: "Invalid request", message: "Enter a valid string for title, description, status and project id." });
-	}
-
-	let projectReq = req;
-	projectReq.params.id = String(req.body.project);
-	let project = await getProject(projectReq);
-	if (project.status == 403) {
-		return res.status(403).json({error: "Forbidden", message: "You are not authorized to perform this action."});
-	} else if (project.status == 404) {
-		return res.status(404).json({ error: "Not found", message: "A project with this id does not exist."});
-	}
-	
 	try {
+		if (!validateCreateTask(req.body.title, req.body.description, req.body.status, req.body.project)) {
+			return res.status(400).json({ error: "Invalid request", message: "Enter a valid string for title, description, status and project id." });
+		}
+
+		let projectReq = req;
+		projectReq.params.id = String(req.body.project);
+		let project = await getProject(projectReq);
+		if (project.status == 403) {
+			return res.status(403).json({error: "Forbidden", message: "You are not authorized to perform this action."});
+		} else if (project.status == 404) {
+			return res.status(404).json({ error: "Not found", message: "A project with this id does not exist."});
+		}
+	
 		const result =  await createTask(req);
 		if (result.status == 201) {
 			return res.status(201).json({ task: result.rows });
@@ -79,26 +78,25 @@ taskRouter.post("/", async (req: Request, res: Response, next: NextFunction) => 
 });
 
 taskRouter.patch("/:id", async (req: Request, res: Response, next: NextFunction) => {
-	if (!validateUpdateTask(req.body.title, req.body.description, req.body.status, req.body.project)) {
-		return res.status(400).json({ error: "Invalid request", message: "Enter a valid string for title, description, or status." });
-	}
-
-	if (!validateId(req.params.id)) {
-		return res.status(400).json({ error: "Invalid request", message: "Enter a valid integer id." });
-	}
-
-	if (req.body.project) {
-		let projectReq = req;
-		projectReq.params.id = String(req.body.project);
-		let project = await getProject(projectReq);
-		if (project.status == 403) {
-			return res.status(403).json({error: "Forbidden", message: "You are not authorized to perform this action."});
-		} else if (project.status == 404) {
-			return res.status(404).json({ error: "Project not found", message: "A project with this id does not exist."});
-		}
-	}
-
 	try {
+		if (!validateUpdateTask(req.body.title, req.body.description, req.body.status, req.body.project)) {
+			return res.status(400).json({ error: "Invalid request", message: "Enter a valid string for title, description, or status." });
+		}
+	
+		if (!validateId(req.params.id)) {
+			return res.status(400).json({ error: "Invalid request", message: "Enter a valid integer id." });
+		}
+	
+		if (req.body.project) {
+			let projectReq = req;
+			projectReq.params.id = String(req.body.project);
+			let project = await getProject(projectReq);
+			if (project.status == 403) {
+				return res.status(403).json({error: "Forbidden", message: "You are not authorized to perform this action."});
+			} else if (project.status == 404) {
+				return res.status(404).json({ error: "Project not found", message: "A project with this id does not exist."});
+			}
+		}
 		const result = await updateTask(req);
 		if (result.status == 200) {
 			return res.status(200).json({ task: result.rows[0] });
@@ -114,11 +112,10 @@ taskRouter.patch("/:id", async (req: Request, res: Response, next: NextFunction)
 });
 
 taskRouter.delete("/:id", async (req: Request, res: Response, next: NextFunction) => {
-	if (!validateId(req.params.id)) {
-		return res.status(400).json({ error: "Invalid request", message: "Enter a valid integer id." });
-	}
-	
 	try {
+		if (!validateId(req.params.id)) {
+			return res.status(400).json({ error: "Invalid request", message: "Enter a valid integer id." });
+		}
 		const result = await deleteTask(req);
 		if (result.status == 204) {
 			return res.status(204).json({ message: "Task deleted" });

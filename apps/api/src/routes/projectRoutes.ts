@@ -21,11 +21,10 @@ projectRouter.get("/", async (req: Request, res: Response, next: NextFunction) =
 });
 
 projectRouter.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
-    if (!validateId(req.params.id)) {
-        return res.status(400).json({ error: "Invalid request", message: "Enter a valid project id." });
-    }
-
     try {
+        if (!validateId(req.params.id)) {
+            return res.status(400).json({ error: "Invalid request", message: "Enter a valid project id." });
+        }
         const result = await getProject(req);
         if (result.status == 200) {
             return res.status(200).json({ project: result.rows[0] });
@@ -40,11 +39,10 @@ projectRouter.get("/:id", async (req: Request, res: Response, next: NextFunction
 });
 
 projectRouter.post("/", async (req: Request, res: Response, next: NextFunction) => {
-    if (!validateCreateProject(req.body.name, req.body.description)) {
-        return res.status(400).json({ error: "Invalid request", message: "Enter a valid project name and description." });
-    }
-    
     try {
+        if (!validateCreateProject(req.body.name, req.body.description)) {
+            return res.status(400).json({ error: "Invalid request", message: "Enter a valid project name and description." });
+        }
         const result = await createProject(req);
         if (result.status == 201) {
             return res.status(201).json({ project: result.rows[0] });
@@ -57,11 +55,10 @@ projectRouter.post("/", async (req: Request, res: Response, next: NextFunction) 
 });
 
 projectRouter.delete("/:id", async (req: Request, res: Response, next: NextFunction) => {
-    if (!validateId(req.params.id)) {
-        return res.status(400).json({ error: "Invalid request", message: "Enter a valid project id." });
-    }
-
     try {
+        if (!validateId(req.params.id)) {
+            return res.status(400).json({ error: "Invalid request", message: "Enter a valid project id." });
+        }
         const result = await deleteProject(req);
         if (result.status == 204) {
             return res.status(204).json({ message: "Project deleted" });

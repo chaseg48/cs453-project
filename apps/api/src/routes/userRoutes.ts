@@ -22,12 +22,11 @@ userRouter.get("/", async (req, res) => {
     }
 });
 
-userRouter.get("/:id", async (req, res) => {
-    if (!validateId(req.params.id)) {
-        return res.status(400).json({ error: "Invalid request", message: "Enter a valid user id." });
-    }
-
+userRouter.get("/:id", async (req, res) => { 
     try {
+        if (!validateId(req.params.id)) {
+            return res.status(400).json({ error: "Invalid request", message: "Enter a valid user id." });
+        }
         const result = await getUser(req);
         if (result.status == 200) {
             return res.status(200).json({ user: result.rows[0] });

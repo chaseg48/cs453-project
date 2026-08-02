@@ -8,11 +8,11 @@ const jwtExpiresIn = "1h";
 export const authRouter = express.Router();
 
 authRouter.post("/register", async (req: Request, res: Response) => {
-    if (!validateRegistrationCredentials(req.body.name, req.body.email, req.body.password, req.body.role)) {
-        return res.status(400).json({error: "Invalid request", message: "Enter a valid name, email and password"});
-    }
-
+    
     try {
+        if (!validateRegistrationCredentials(req.body.name, req.body.email, req.body.password, req.body.role)) {
+            return res.status(400).json({error: "Invalid request", message: "Enter a valid name, email and password"});
+        }
         const result = await registerUser(req.body.name, req.body.email, req.body.password, req.body.role);
 
         if (result.status == 201) {
@@ -28,11 +28,11 @@ authRouter.post("/register", async (req: Request, res: Response) => {
 });
 
 authRouter.post("/login", async (req: Request, res: Response) => {
-    if (!validateLoginCredentials(req.body.email, req.body.password)) {
-        return res.status(400).json({error: "Invalid request", message: "Enter a valid name, email and password"});
-    }
-
+    
     try {
+        if (!validateLoginCredentials(req.body.email, req.body.password)) {
+            return res.status(400).json({error: "Invalid request", message: "Enter a valid name, email and password"});
+        }
         const result = await login(req.body.name, req.body.email, req.body.password);
         if (result.status == 401) {
             return res.status(401).json({error: "Not authorized", message: "Invalid password"});

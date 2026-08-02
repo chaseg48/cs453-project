@@ -57,6 +57,7 @@ support modifying the owner id of projects.
     "updated_at": "2026-07-31 20:06:36.627073+00"
 }
 ```
+---
 
 The owner assigned to id will autopopulate with the user id of the user making the request. Task creation requires
 a valid project id.
@@ -70,6 +71,8 @@ Json Web Token. After logging in, successive API calls are expected to contain t
 with the `JWT_SECRET`. To run the server, `JWT_SECRET` must be defined within the environment that the server is running
 in, else the server throws an error. More information on defining this environment variable is provided below.
 
+---
+
 # API Features
 
 The API implements the following routes:
@@ -80,19 +83,21 @@ The API implements the following routes:
 | `GET /db-health` | Database health check | None |
 | `POST /auth/register` | Create a new user | None |
 | `POST /auth/login` | Log in as user | None |
-| `GET /users` | Return list of all users | Admin |
-| `GET /users/:id` | Return one user | Admin |
-| `GET /projects` | Return list of projects | User |
-| `GET /projects/:id` | Return one project | User |
-| `POST /projects` | Create a new project | User |
-| `DELETE /projects/:id` | Delete a project | User |
-| `GET /tasks` | Return list of tasks | User |
-| `GET /tasks/:id` | Return one task | User |
-| `POST /tasks` | Create new task | User |
-| `PATCH /tasks/:id` | Update one task | User |
-| `DELETE /tasks/:id` | Delete one task | User |
+| `GET /users` | Return list of all users | admin |
+| `GET /users/:id` | Return one user | admin |
+| `GET /projects` | Return list of projects | user |
+| `GET /projects/:id` | Return one project | user |
+| `POST /projects` | Create a new project | user |
+| `DELETE /projects/:id` | Delete a project | user |
+| `GET /tasks` | Return list of tasks | user |
+| `GET /tasks/:id` | Return one task | user |
+| `POST /tasks` | Create new task | user |
+| `PATCH /tasks/:id` | Update one task | user |
+| `DELETE /tasks/:id` | Delete one task | user |
 
 It is important to note that deleting a project will also cause all related tasks to be deleted.
+
+---
 
 # Authorization Rules
 
@@ -113,9 +118,50 @@ as follows:
 | `PATCH /tasks/:id` | Update one task if assigned to user. Admins may update any tasks.
 | `DELETE /tasks/:id` | Delete one task if assigned to user. Admins may delete any task.
 
-# Example Routes
+---
 
-### `GET /health`
+# Example Curl Commands
+## Create a new user
+```bash
+curl -X POST \
+ -H "Content-Type: application/json" \
+ -d '{"name": "User", "email": "user@uah.edu", "password": "mypw", "role": "user"}' \
+ http://localhost:3000/auth/register
+```
+
+## To create an admin account, use the argument `admin` in the `role` property
+
+## Log in
+```bash
+curl -X POST \
+ -H "Content-Type: application/json" \
+ -d '{"email": "user@uah.edu", "password": "mypw"}' \
+ http://localhost:3000/auth/login
+```
+
+## Create a project
+```bash
+curl -X POST \
+ -H "Content-Type: application/json" \
+ -H "authorization: Bearer your_token_here" \
+ -d '{"name": "My Project", "description": "My project description"}' \
+ http://localhost:3000/projects
+```
+
+## Create a task
+```bash
+curl -X POST \
+ -H "Content-Type: application/json" \
+ -H "authorization: Bearer your_token_here" \
+ -d '{"title": "My Task", "description": "My task description", "status": "In Progress", "project": 2}' \
+ http://localhost:3000/tasks
+```
+
+---
+
+# Example Routes And Return Values
+
+## `GET /health`
 
 Returns a health check on the server.
 
@@ -126,7 +172,7 @@ Returns a health check on the server.
 }
 ```
 
-### `GET /db-health`
+## `GET /db-health`
 
 Returns a health check on the database.
 
@@ -138,7 +184,7 @@ Returns a health check on the database.
 }
 ```
 
-### `POST /auth/register`
+## `POST /auth/register`
 
 Registers a new user.
 
@@ -148,17 +194,24 @@ Registers a new user.
 }
 ```
 
-### `POST /auth/login`
+## `POST /auth/login`
 
-Registers a new user.
+Log in as user.
 
 ```json
 {
-    "message": "Logged in as: User 1"
+    "message": "Logged in as: User 1",
+    "accessToken": "your_token",
+    "tokenType": "Bearer",
+    "expiresIn": "1h",
+    "user": {
+        "name": "User 1",
+        "role": "user"
+    }
 }
 ```
 
-### `GET /tasks`
+## `GET /tasks`
 
 Returns tasks assigned to the user.
 
@@ -310,6 +363,8 @@ Creates a project and returns the created project if successfull.
 Returns an `Error 400` response if the request body is invalid.
 Returns an `Error 401` if the user is not signed in.
 
+---
+
 # Repository Structure
 
 ```bash
@@ -453,6 +508,8 @@ npm run test
 # Reflection Questions
 
 Reflection questions are answered in the answers.md file.
+
+---
 
 # Graduate Extension
 
